@@ -2,6 +2,14 @@
 .assets/
 .private/
 
+# Pycharm config folder
+.idea
+
+
+
+##########################################
+# Below is a template from git's repo
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
