@@ -1,3 +1,8 @@
+# TA's material, peer discussion scratch and bookmarks
+.assets/
+.private/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
