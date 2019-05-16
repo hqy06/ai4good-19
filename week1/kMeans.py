@@ -160,7 +160,7 @@ def _k_means_assignment(samples, centroids, norm='euclidean', isSoft=False):
 def _k_means_refit(samples, responsibilities):
     n_samples = responsibilities.shape[0]
     n_clusters = responsibilities.shape[1]
-    n_features = responsibilities.shape[1]
+    n_features = samples.shape[1]
     centers = np.zeros((n_clusters, n_features))
 
     for k in range(n_clusters):
@@ -168,14 +168,30 @@ def _k_means_refit(samples, responsibilities):
         resp_k = responsibilities[:, k]
         # extract those with nonzero responsibility
         valid_ind = np.nonzero(resp_k)
+        n_valid = valid_ind[0].size
+        print('# valid samples: ', n_valid)
+
+        # if the cluster is not resp for any data point, do nothing this term
+        if n_valid == 0:
+            break
+
         valid_resp = resp_k[valid_ind]
         valid_samples = samples[valid_ind]
         n_valid = len(valid_ind)
 
         # calculation
         # resp is considered as weight
-        weighted_samples = (
-                valid_resp * valid_samples.reshape(n_features, n_valid)).reshape(n_valid, n_features)
+        weights = np.diag(valid_resp)
+        print(weights.shape, n_valid)
+
+        try:
+            weighted_samples = np.dot(weights, valid_samples)
+        except ValueError:
+            print('array shape mismatch! # valid=%d', n_valid)
+
+        # weighted = valid_resp * (valid_samples.reshape(n_features, n_valid))
+        # print('print random stuff')
+        # weighted_samples = weighted.reshape(n_valid, n_features)
         # sum over samples (axis=0) and divide by n_valid to obtained the (weighted) avg
         center_k = np.mean(weighted_samples, axis=0)
 
@@ -216,23 +232,24 @@ def main():
     kmean = kMean(n_features, n_labels, n_samples, is_soft=False)
 
     # 4. Train the classifier
-    kmean.fit(X_train)
+
+    kmean.fit(X_train, random=True)
 
     # 5. Performance on training set
     print('Label | Predic \n')
-    for rand_index in np.random.randomin(0, X_train.shape[0], 10):
+    for rand_index in np.random.randint(0, X_train.shape[0], 10):
         x = X_train[rand_index]
         y = y_train[rand_index]
         pred = kmean.predict(x)
-        print('%d   |  %d \n', y, pred)
+        print('%d   |  %d \n' % (y, pred))
 
     # 6. Performance on test set
-    print('Label | Predic \n', y, pred)
-    for rand_index in np.random.randomin(0, X_test.shape[0], 10):
+    print('Label | Predict \n')
+    for rand_index in np.random.randint(0, X_test.shape[0], 10):
         x = X_test[rand_index]
         y = y_test[rand_index]
         pred = kmean.predict(x)
-        print('%d   |  %d \n', y, pred)
+        print('%d   |  %d \n' % (y, pred))
 
 
 if __name__ == "__main__":
