@@ -13,6 +13,8 @@
 
 ### Algorithm
 
+Nothing Fancy, check study note
+
 ### Implementation
 
 #### Hints
@@ -25,8 +27,34 @@
 
 #### Coding
 
-See the MLP.py file
+A not-running undebugged version can be find in simpleMLP.py. The file is for practice algorithm implementation only and, unlike k-mean and k-NN, is not supposed to be a functional code.
 
-#### Reflection
+### Using the Libraries
 
-### Note Behind
+#### Sci-Kit Learn
+
+Just like linear transformation (not linear functional!) and manifold, the MLP can be view as a mathematical model that can be used in the field of ML. So there is no supersing that `sklearn` got their MLP prepared for both classification and regression.
+
+Link [here](https://scikit-learn.org/stable/modules/classes.html#module-sklearn.neural_network) :no_mouth:
+
+**MLP regression**
+
+TBA
+
+**MLP classification**
+
+TBA
+
+#### PyTorch
+
+This PyTorch, what would you expect?
+
+...Well, you just instantiate the model and play with datasets and hyperparmeters
+
+### Reflections
+
+### Note to Self
+
+1. sklearn: `make_moon` and `make_circle`
+   > make_circles and make_moons generate 2d binary classification datasets that are challenging to certain algorithms (e.g. centroid-based clustering or linear classification), including optional Gaussian noise. They are useful for visualisation. make_circles produces Gaussian data with a spherical decision boundary for binary classification, while make_moons produces two interleaving half circles.
+2.
