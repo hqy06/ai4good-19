@@ -3,6 +3,11 @@ Toying with k-Means, both hard and soft.
 ------------------------------------
 TODO:
 - implement soft k-mean assignment
+- do a 2 feature clustering
+- CF: https://github.com/kjahan/k-means/blob/master/clustering.py
+- CF: https://github.com/sK4rdell/soft-kmeans
+- CF: https://jakevdp.github.io/PythonDataScienceHandbook/05.11-k-means.html
+- CF: http://benalexkeen.com/k-means-clustering-in-python/
 ------------------------------------
 Method:
 - Type: unsupervised

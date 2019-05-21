@@ -1,12 +1,13 @@
-# TODO: debug
-
-# https://github.com/meetvora/mlp-classifier/blob/master/neuralnet.py
-
-# http://www.wildml.com/2015/09/implementing-a-neural-network-from-scratch/
 
 
 """
-Just a very simple fully-connected feed-forward neural network.
+Just a very simple fully-connected feed-forward neural network SKELETON.
+
+No testing, no debuggin, it won't run and is not supposed to work a functional unit as sklearn and pytorch have already done a brilliant job.
+
+For futher reading, check these two websites:
+- https://github.com/meetvora/mlp-classifier/blob/master/neuralnet.py
+- http://www.wildml.com/2015/09/implementing-a-neural-network-from-scratch/
 
     O ...... O              input layer      {X}    ...
 
@@ -225,8 +226,6 @@ def log_likelihood(x):
 ###############################################################################
 # Manipulate the data set
 ###############################################################################
-
-# TODO: the load_data function and his companions
 
 
 def load_data():
