@@ -57,4 +57,10 @@ This PyTorch, what would you expect?
 
 1. sklearn: `make_moon` and `make_circle`
    > make_circles and make_moons generate 2d binary classification datasets that are challenging to certain algorithms (e.g. centroid-based clustering or linear classification), including optional Gaussian noise. They are useful for visualisation. make_circles produces Gaussian data with a spherical decision boundary for binary classification, while make_moons produces two interleaving half circles.
-2.
+2. MinMaxScaler vs. StandardScaler: [link1](https://www.quora.com/Minmaxscaler-vs-Standardscaler-Are-there-any-specific-rules-to-use-one-over-the-other-for-a-particular-application), [link2](http://rajeshmahajan.com/standard-scaler-v-min-max-scaler-machine-learning/)
+
+3.matplotlib tricks
+
+- To hide axis value, do this: `ax.set_yticklabels([])`
+- To add some fancy text in the subplot, do this: `axis.text(pos_x, pos_y,text, size=12, horizontalalignment='right')`
+- To set some fashionable (blah) labels, use this: `ax.set_ylabel(name,size=15,labelpad=12)`

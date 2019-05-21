@@ -13,9 +13,12 @@ https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClas
 """
 
 # ========== General Usage
+from matplotlib.colors import ListedColormap
 from sklearn.neural_network import MLPClassifier
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 # ========== Silence the Convergence Warning
@@ -23,7 +26,8 @@ import warnings
 from sklearn.exceptions import ConvergenceWarning
 warnings.filterwarnings(action='ignore', category=ConvergenceWarning)
 
-# ========== Global Variables
+
+# ========== 1. Learning rate demo
 labels = ["constant learning-rate", "constant with momentum", "constant with Nesterov's momentum",
           "inv-scaling learning-rate", "inv-scaling with momentum", "inv-scaling with Nesterov's momentumn", "adam"]
 
@@ -49,8 +53,6 @@ hyperparas = [{'solver': 'sgd', 'learning_rate': 'constant', 'momentum': 0,
                'nesterovs_momentum': False, 'learning_rate_init': 0.2},
               {'solver': 'adam', 'learning_rate_init': 0.01}]
 
-
-# ========== 1. Learning rate demo
 
 def learning_rate_demo():
     # load the toy datasets
@@ -103,10 +105,110 @@ def lr_plot_me(X, y, axis, dataset_name):
 
 # ========== 2. Regularization penalty
 
+# Setting the hyperparamters
+alphas = np.logspace(-5, 3, 5)
+
+# The color map
+
+cm = plt.cm.RdBu
+cm_bright = ListedColormap(['#FF0000', '#0000FF'])
+
+
+def regularization_demo():
+    # Generate toy dataset
+    from sklearn import datasets
+    moons = datasets.make_moons(noise=0.3, random_state=48)
+    circles = datasets.make_circles(noise=0.2, factor=0.5, random_state=52)
+    blobs = datasets.make_blobs(centers=2, n_features=2, random_state=37)
+
+    datasets = [moons, circles, blobs]
+    datasets_names = ['moon', 'circle', 'two blobs']
+
+    # Init the figures
+    figs, axes = plt.subplots(3, 6, figsize=(12, 30))
+
+    assert (len(datasets) == len(datasets_names)), "size mismatch!"
+
+    row = 0
+    for (X, y), name in zip(datasets, datasets_names):
+        print('\n learning on dataset %s' % name)
+        # Prepare the data
+        # - scale the features
+        X = StandardScaler().fit_transform(X)
+        # - Train test split!
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.4)
+        # - canvas boundary
+        coord1_min, coord1_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
+        coord2_min, coord2_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
+        h = 0.2
+        coord1, coord2 = np.meshgrid(
+            np.arange(coord1_min, coord1_max, h), np.arange(coord2_min, coord2_max, h))
+
+        # Plot the scaled data at the first slot of the row
+        column = 0
+        ax = axes[row, column]
+        ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap=cm_bright)
+        ax.scatter(X_test[:, 0], X_test[:, 1],
+                   c=y_test, cmap=cm_bright, alpha=0.5)
+        ax.set_yticklabels([])
+        ax.set_xticklabels([])
+        ax.set_ylabel(name, size=15, labelpad=12)
+        column += 1  # finish with this slot
+
+        # Init the models
+        mlps = []
+        for alpha in alphas:
+            mlp = MLPClassifier(alpha=alpha, random_state=3)
+            mlp.fit(X, y)
+            mlps.append(mlp)
+
+        for mlp, alpha in zip(mlps, alphas):
+            ax = axes[row, column]
+            reg_plot_me(X_train, y_train, X_test, y_test, coord1, coord2,
+                        axis=ax, alpha=alpha, classfier=mlp)
+            ax.axis('off')
+            column += 1
+
+        row += 1
+
+    # Save and show
+    plt.savefig('reg_demo.png')
+    plt.show()
+
+
+def reg_plot_me(X_train, y_train, X_test, y_test, coord1, coord2, axis, alpha, classfier):
+    # Plot the decision boundary
+    if hasattr(classfier, "decision_function"):
+        Z = classfier.decision_function(np.c_[coord1.ravel(), coord2.ravel()])
+    else:
+        Z = classfier.predict_proba(
+            np.c_[coord1.ravel(), coord2.ravel()])[:, 1]
+    Z = Z.reshape(coord1.shape)
+    axis.contourf(coord1, coord2, Z, cmap=cm, alpha=0.7)
+
+    # Plot the scaled data
+    axis.scatter(X_train[:, 0], X_train[:, 1], c=y_train,
+                 cmap=cm_bright, edgecolors='black')
+    axis.scatter(X_test[:, 0], X_test[:, 1],
+                 c=y_test, cmap=cm_bright, alpha=0.5, edgecolors='black')
+
+    # Title and Accuracy
+    title = 'alpha ' + str(alpha)
+    axis.set_title(title, size=10)
+    score = classfier.score(X_test, y_test)
+    text = ('%.2f' % score).lstrip('0')
+    axis.text(coord1.max() - 0.3, coord2.min() + 0.3,
+              text, size=12, horizontalalignment='right')
+
+
+# ========== Main Entrance
+
 
 def main(no_task):
     if no_task == 1:
         learning_rate_demo()
+    elif no_task == 2:
+        regularization_demo()
     else:
         raise ValueError("Task number out of boundary")
 
