@@ -125,11 +125,7 @@ def regularization_demo():
     datasets_names = ['moon', 'circle', 'two blobs']
 
     # Init the figures
-<<<<<<< HEAD
     figs, axes = plt.subplots(3, 6, figsize=(30, 12))
-=======
-    figs, axes = plt.subplots(3, 6, figsize=(12, 30))
->>>>>>> 044ec820e07157cbe2d3acf8df3f1caed9d7b09a
 
     assert (len(datasets) == len(datasets_names)), "size mismatch!"
 
@@ -205,7 +201,6 @@ def reg_plot_me(X_train, y_train, X_test, y_test, coord1, coord2, axis, alpha, c
               text, size=12, horizontalalignment='right')
 
 
-<<<<<<< HEAD
 # ========== 3. Regularization penalty
 
 def weight_visualization_demo():
@@ -245,8 +240,6 @@ def weight_visualization_demo():
     plt.show()
 
 
-=======
->>>>>>> 044ec820e07157cbe2d3acf8df3f1caed9d7b09a
 # ========== Main Entrance
 
 
@@ -255,11 +248,8 @@ def main(no_task):
         learning_rate_demo()
     elif no_task == 2:
         regularization_demo()
-<<<<<<< HEAD
     elif no_task == 3:
         weight_visualization_demo()
-=======
->>>>>>> 044ec820e07157cbe2d3acf8df3f1caed9d7b09a
     else:
         raise ValueError("Task number out of boundary")
 
