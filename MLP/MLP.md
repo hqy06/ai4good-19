@@ -23,7 +23,7 @@ Nothing Fancy, check study note
 - For matrix transpose $ x^\top$ use `x.transpose`
 - Keep track of the dimensions of all numpy arrays
 - Start with a simpleMLP, then to a standard one.
--
+- It can be hard, brag some coffee.
 
 #### Coding
 
@@ -40,6 +40,8 @@ Link [here](https://scikit-learn.org/stable/modules/classes.html#module-sklearn.
 **MLP regression**
 
 Create a swiss roll and do the regression!
+
+No... swiss rolll is for _manifold learning_. Use "Friedman" or "boston housing" or "load_linnerud". (Or come up with some fancy function then feed it to `make_regression`)
 
 **MLP classification**
 
@@ -70,3 +72,10 @@ Must be some way to tune the hyperparmeters instead mannually do those stuffs
 - To hide axis value, do this: `ax.set_yticklabels([])`
 - To add some fancy text in the subplot, do this: `axis.text(pos_x, pos_y,text, size=12, horizontalalignment='right')`
 - To set some fashionable (blah) labels, use this: `ax.set_ylabel(name,size=15,labelpad=12)`
+
+4. Ploting 3D
+
+- `from mpl_toolkits.mplot3d import Axes3D`
+- Use `plot_trisurf` if you have xx, yy, zz as 1-dim arrays. Use `plot_surface` if you have `xx,yy=meshgrid(...)` and has resultingz as 2-dim arrays.
+- Read us: [link 1](https://matplotlib.org/gallery/mplot3d/surface3d.html), [link 2](https://matplotlib.org/gallery/mplot3d/scatter3d.html), [link 3](https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html)
+- The color maps [doc](https://matplotlib.org/tutorials/colors/colormaps.html)

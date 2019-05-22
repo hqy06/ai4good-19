@@ -26,8 +26,8 @@ Read later: [link](https://scikit-learn.org/stable/auto_examples/cluster/plot_mi
 
 - [x] Note
 - [x] Simple MLP: no debug!
-- [ ] MLP in `sklearn`
-- [ ] MLP in `pytorch`
+- [x] MLP in `sklearn`
+- [ ] ~~MLP in `pytorch`~~
 
 ## CNN: convolution neural net
 
