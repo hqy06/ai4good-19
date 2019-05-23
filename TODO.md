@@ -1,11 +1,11 @@
 # Models
 
-## K Nearest Neighbor
+## :heavy_check_mark: K Nearest Neighbor
 
 - [x] Note
 - [x] Write code
 - [x] Debug using IRIS
-- [ ] More test
+- [ ] More test (optional)
 
 ## K Means
 
@@ -22,22 +22,22 @@ Bishop: life time good book to read
 
 Read later: [link](https://scikit-learn.org/stable/auto_examples/cluster/plot_mini_batch_kmeans.html#sphx-glr-auto-examples-cluster-plot-mini-batch-kmeans-py)
 
-## MLP: fully-connected feed-forward NN
+## :heavy_check_mark: MLP: fully-connected feed-forward NN
 
 - [x] Note
 - [x] Simple MLP: no debug!
 - [x] MLP in `sklearn`
-- [ ] ~~MLP in `pytorch`~~
+- [x] ~~MLP in `pytorch`~~ not necessary
 
 ## CNN: convolution neural net
 
-- [ ] Note
-- [ ] Simple Code
-- [ ] TBA
+- [x] ~~Note~~ See study note in _19W_ notebook
+- [x] Simple Code
+- [ ] Tutorial by @[Puneet Grover](https://www.kaggle.com/puneetgrover)
 
 ## RNN: recurrent neural net
 
-- [ ] Note
+- [x] Note
 - [ ] Simple Code
 - [ ] TBA
 
@@ -58,3 +58,13 @@ Read later: [link](https://scikit-learn.org/stable/auto_examples/cluster/plot_mi
 ## Natural Language Processing
 
 - [ ] TBA
+
+---
+
+# Misc
+
+[Click me for github markdown emoji](https://gist.github.com/rxaviers/7360908)
+
+[math in matplotlib](https://matplotlib.org/tutorials/text/mathtext.html)
+
+[Atom Hydrogen Debug](https://nteract.gitbooks.io/hydrogen/docs/Troubleshooting.html)
