@@ -25,6 +25,9 @@ import matplotlib.pyplot as plt    # plot
 from matplotlib import colors
 from datetime import datetime
 
+from sklearn.decomposition import PCA                 # PCA
+from mpl_toolkits.mplot3d import Axes3D  # 3d plot
+
 import torch            # torch
 import torchvision      # built-in datasets
 import torch.nn as nn   # neural net
@@ -82,7 +85,7 @@ def split_dataframe(dataframe=None, fraction=0.9, rand_seed=42):
 ############################################
 
 
-def show_images(images, fig_size, labels, predictions=None, cols=None, name=None):
+def show_images(images, fig_size, labels, predictions=None, cols=None, name=None, display=True):
     """
     Display multiple (>=2) images of given size.
     ----
@@ -131,54 +134,85 @@ def show_images(images, fig_size, labels, predictions=None, cols=None, name=None
 
     fig.tight_layout()
     plt.savefig(f_name)
-    plt.show(block=False)
-    plt.pause(3)
+    if display:
+        plt.show(block=False)
+        plt.pause(3)
     plt.close()
 
+
+def plot_PCA(data, display=True):
+    pca = PCA(n_components=3)
+    pca_result = pca.fit_transform(data)
+
+    pca_1 = pca_result[:, 0]
+    pca_2 = pca_result[:, 1]
+    pca_3 = pca_result[:, 2]
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.scatter(pca_1, pca_2, pca_3, c=pca_3, cmap='tab10', alpha=0.2)
+    plt.savefig('visualization_train_PCA.png')
+    if display:
+        plt.show(block=False)
+        plt.pause(2)
+    plt.close()
+
+# def plot_tSNE(pt, )
 
 ############################################
 # Main
 ############################################
 
 
-def main(verbose=True, show_img=True):
+def main(phase, verbose=True, show_img=True):
     # ====== Load and Explore Data =======
     train_df = pd.read_csv('../datasets/digits_train.csv')
     test_df = pd.read_csv('../datasets/digits_test.csv')
-    n_train = train_df.shape[0]
-    n_test = test_df.shape[0]
-    assert (test_df.shape[1] == train_df.shape[1]
-            ), 'Number of features mismatch!'
+    assert (test_df.shape[1] == train_df.shape[1] - 1
+            ), 'Number of features mismatch! train={} <> 1+test={}'.format(train_df.shape[1], test_df.shape[1])
     n_features = train_df.shape[1] - 1
-
     if verbose:
-        print('****** Exploring dataset\n')
-        print('DataFrame: TRAIN, %d samples, labeled, each with %d features' %
-              (n_train, n_features))
-        print('DataFrame: TEST, %d samples, labeled, each with %d features' %
-              (n_test, n_features))
-        print('\nA small sample from TRAIN:')
-        print(train_df.head())
+        print("****** dataset read from csv files")
 
-    if show_img:
+    if phase >= 1:  # Explore the dataset
+        if verbose:
+            print("============= PHASE 1: explore dataset")
+            print('DataFrame: TRAIN, %d samples, labeled, each with %d features' %
+                  (train_df.shape[0], n_features))
+            print('DataFrame: TEST, %d samples, labeled, each with %d features' %
+                  (test_df.shape[0], n_features))
+            print('\nA small sample from TRAIN:')
+            print(train_df.head())
+
         # Display random digits
-        rand_train = np.random.randint(n_train, size=9)
-        images = train_df.iloc[rand_train, 1:].values
-        labels = train_df.iloc[rand_train, 0]
-        show_images(images, (28, 28), labels, pred=None)
+        if show_img:
+            rand_train = np.random.randint(test_df.shape[0], size=9)
+            images = train_df.iloc[rand_train, 1:].values.reshape(-1, 28, 28)
+            labels = train_df.iloc[rand_train, 0]
+            show_images(images, (28, 28), labels, cols=3)
 
         # Display a histogram
         plt.hist(train_df.iloc[:, 0], color="skyblue",
                  ec="cornflowerblue", lw=2)
         plt.title('histogram on train dataset')
-        plt.save('histogram.png')
-        plt.show()
-        plt.pause(2)
-        plt.close()
+        plt.savefig('histogram.png')
+        if show_img:
+            plt.show()
+            plt.pause(2)
+            plt.close()
+        else:
+            plt.close()
+
+        if verbose:
+            print("============= END OF PHASE 1")
+
+        if phase == 1:
+            exit(0)
 
     # ====== Preprocess the Data =======
     # Seperate the validation set
     train_df, valid_df = split_dataframe(train_df, fraction=0.9)
+    if verbose:
+        print("****** Seperated validation set from training set.")
 
     """ The following code snipet didn't make use of PyTorch, need to define a custom dataset class
     # Extract input matrix and target vector for each set
@@ -197,7 +231,10 @@ def main(verbose=True, show_img=True):
     train_transform_f = transforms.Compose([transforms.ToPILImage(
     ), RandAffine, transforms.ToTensor(), transforms.Normalize(mean=(0.5,), std=(0.5,))])
 
-    if show_img:    # show data augmentation
+    if phase >= 2:   # show data augmentation
+        if verbose:
+            print("============= PHASE 2: illustrate data augmentation")
+
         rotate = transforms.RandomRotation(degrees=45)
         shift = RandAffine
         composed = transforms.Compose([rotate, shift])
@@ -213,10 +250,21 @@ def main(verbose=True, show_img=True):
                 t_samples.append(np.array(t(img)))
                 t_names.append(type(t).__name__)
 
-        show_images(images, (28, 28), titles)
+        show_images(images, (28, 28), titles, display=show_img)
+        if verbose:
+            print("============= END OF PHASE 2")
 
-    # ===========
+        if phase == 2:
+            exit(0)
+
+    if phase >= 3:   # Visualizing classes
+        if verbose:
+            print("============= PHASE 3: VISUALIZATION CLASSES")
+        X_train = train_df.iloc[:, 1:].values
+        plot_PCA(X_train, display=show_img)
 
 
 if __name__ == '__main__':
-    main()
+    print("Phases:\n\t 1. expore the dataset\n\t 2. on data augmentation")
+    phase = input("key in phase number 1, 2, or 3: ")
+    main(int(phase))

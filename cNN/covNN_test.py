@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # 3d plot
+from sklearn.decomposition import PCA                 # PCA
 import pandas as pd
 import numpy as np
 import covNN
@@ -31,3 +34,21 @@ for s in samples:
         t_names.append(type(t).__name__)
 
 covNN.show_images(t_samples, (28, 28), t_names, cols=3)
+
+
+print('********* visualization: PCA')
+X_train = train_df.iloc[:, 1:].values
+X_train.shape
+pca = PCA(n_components=3)
+
+pca_result = pca.fit_transform(X_train)
+
+pca_result.shape
+
+pca_1 = pca_result[:, 0]
+pca_2 = pca_result[:, 1]
+pca_3 = pca_result[:, 2]
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+ax.scatter(pca_1, pca_2, pca_3, c=pca_3, cmap='tab10', alpha=0.5)
+plt.show()

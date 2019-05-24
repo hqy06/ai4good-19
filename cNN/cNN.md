@@ -42,11 +42,22 @@ A nice PyTorch tutorial by yunjey on GitHub: https://github.com/yunjey/pytorch-t
 ### Checklist
 
 [x] do you have `__main__`?
-[ ] data loading and preprocessing
-[ ] exploring the data: visualization, histogram, parameters
+
+[x] loading csv
+
+[x] exploring the data: basic visualization, histogram, parameters
+
 [ ] define a CovNN
+
 [ ] Train and evaluation
+
 [ ] Prediction on test set
+
+[x] Debugging and testing like a computer scientist (not a data scientist)
+
+[ ] Visualize multi-dim data: t-SNE
+
+[x] the `Dataset` class in PyTorch
 
 ### Nice tricks for python
 
@@ -64,8 +75,8 @@ from X import Y
 
 Display multiple digist images:
 
-- https://stackoverflow.com/questions/46615554/how-to-display-multiple-images-in-one-figure-correctly/46616645
-- by soply on github: https://gist.github.com/soply/f3eec2e79c165e39c9d540e916142ae1
+- [stackoverflow Q&A](https://stackoverflow.com/questions/46615554/how-to-display-multiple-images-in-one-figure-correctly/46616645)
+- [by soply on github](https://gist.github.com/soply/f3eec2e79c165e39c9d540e916142ae1)
 
 Why data augmentation matters:
 
@@ -80,6 +91,10 @@ The transformation function in `torchvision.transforms` only works on PIL Image,
 
 - PIL to numpy array: `np_img = np.array(pil_img)`
 - numpy array to PIL: `pil_img = PIL.Image.fromarray(pn_img)` or `pil_img = transforms.ToPILImage()(np_img)'`
+
+visualization: https://colah.github.io/posts/2014-10-Visualizing-MNIST/
+
+Color reference: https://matplotlib.org/2.0.2/examples/color/colormaps_reference.html
 
 ## Future work
 
