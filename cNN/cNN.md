@@ -41,7 +41,7 @@ A nice PyTorch tutorial by yunjey on GitHub: https://github.com/yunjey/pytorch-t
 
 ### Checklist
 
-[ ] do you have `__main__`?
+[x] do you have `__main__`?
 [ ] data loading and preprocessing
 [ ] exploring the data: visualization, histogram, parameters
 [ ] define a CovNN
@@ -51,3 +51,38 @@ A nice PyTorch tutorial by yunjey on GitHub: https://github.com/yunjey/pytorch-t
 ### Nice tricks for python
 
 Retrive working directory: `os.getcwd()` or `from pathlib import Path` and then `cwd = Path.cwd()`
+
+To reload module:
+
+```python3
+# python3.x would require
+# from importlib import reload
+import X
+reload( X )
+from X import Y
+```
+
+Display multiple digist images:
+
+- https://stackoverflow.com/questions/46615554/how-to-display-multiple-images-in-one-figure-correctly/46616645
+- by soply on github: https://gist.github.com/soply/f3eec2e79c165e39c9d540e916142ae1
+
+Why data augmentation matters:
+
+- [medium blog](https://medium.com/nanonets/how-to-use-deep-learning-when-you-have-limited-data-part-2-data-augmentation-c26971dc8ced)
+- [standford paper](http://cs231n.stanford.edu/reports/2017/pdfs/300.pdf)
+- [data augmentation an PyTorch](https://stackoverflow.com/questions/51677788/data-augmentation-in-pytorch)
+
+Transfer Learning: you want a better init for you NN
+https://cs231n.github.io/transfer-learning/
+
+The transformation function in `torchvision.transforms` only works on PIL Image, rremember to convert them:
+
+- PIL to numpy array: `np_img = np.array(pil_img)`
+- numpy array to PIL: `pil_img = PIL.Image.fromarray(pn_img)` or `pil_img = transforms.ToPILImage()(np_img)'`
+
+## Future work
+
+Explore the "augmentation network" mentioned in standford's paper
+Explore the "Transfer learning" (WOW also stanford)
+Explore [this python package](https://github.com/mdbloice/Augmentor)
