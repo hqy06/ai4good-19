@@ -24,9 +24,11 @@ import numpy as np      # math
 import matplotlib.pyplot as plt    # plot
 from matplotlib import colors
 from datetime import datetime
+import time
 
 from sklearn.decomposition import PCA                 # PCA
 from mpl_toolkits.mplot3d import Axes3D  # 3d plot
+from sklearn.manifold import TSNE
 
 import torch            # torch
 import torchvision      # built-in datasets
@@ -140,23 +142,86 @@ def show_images(images, fig_size, labels, predictions=None, cols=None, name=None
     plt.close()
 
 
-def plot_PCA(data, display=True):
+def plot_PCA(data, labels, display=True, dim=3):
+    assert (dim == 2 or dim == 3)
     pca = PCA(n_components=3)
     pca_result = pca.fit_transform(data)
 
     pca_1 = pca_result[:, 0]
     pca_2 = pca_result[:, 1]
     pca_3 = pca_result[:, 2]
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
-    ax.scatter(pca_1, pca_2, pca_3, c=pca_3, cmap='tab10', alpha=0.2)
+
+    if dim == 3:
+        fig = plt.figure(figsize=(15, 10))
+        ax = fig.gca(projection='3d')
+        dots = ax.scatter(pca_1, pca_2, pca_3, c=labels,
+                          cmap='tab10', alpha=0.2)
+        plt.colorbar(dots)
+        ax.set_xlabel('pca-one')
+        ax.set_ylabel('pca-two')
+        ax.set_zlabel('pca-three')
+        ax.set_title('visualization of training set using PCA in 3D', size=12)
+    elif dim == 2:
+        fig = plt.figure(figsize=(16, 10))
+        ax = plt.gca()
+        dots = ax.scatter(pca_1, pca_2,
+                          c=labels, cmap="tab10", alpha=0.3)
+        plt.colorbar(dots)
+        ax.set_xlabel('pca-one')
+        ax.set_ylabel('pca-two')
+        ax.set_title('visualization of training set using PCA in 2D', size=12)
     plt.savefig('visualization_train_PCA.png')
+    # fig.tight_layout()
     if display:
         plt.show(block=False)
         plt.pause(2)
     plt.close()
 
-# def plot_tSNE(pt, )
+
+def plot_tSNE(data, labels, display=True, pca_dim=None, shrink=True, verbose=True):
+    # sanity check
+    assert (data.shape[0] == labels.shape[0])
+
+    # No more than 10000 samples allowed
+    n_samples = data.shape[0]
+    if n_samples > 10000 and shrink:
+        if verbose:
+            print("More than 10k samples! ramdom sample from the original dataset")
+        rand_indices = np.random.randint(n_samples, size=10000)
+        data = data[rand_indices, :]
+        labels = labels[rand_indices]
+
+    if pca_dim:
+        if verbose:
+            print("Let's do PCA to find the {} principal components".format(pca_dim))
+        pca = PCA(n_components=pca_dim)
+        data = pca.fit_transform(data)
+        if verbose:
+            print('Cumulative explained variation for {} principal components: {}'.format(
+                pca_dim, np.sum(pca.explained_variance_ratio_)))
+
+    # Let's do t_SNE!
+    v = 0
+    if verbose:
+        v = 1
+    tsne = TSNE(n_components=2, verbose=v, perplexity=40, n_iter=300)
+    time_start = time.time()
+    tsne_results = tsne.fit_transform(data)
+    if verbose:
+        print('\nt-SNE done! Time elapsed: {} seconds'.format(time.time() - time_start))
+
+    # Plot the result!
+    fig = plt.figure(figsize=(16, 10))
+    ax = plt.gca()
+    ax.scatter(tsne_results[:, 0], tsne_results[:, 1], c=labels,
+               cmap="tab10", alpha=0.3)
+    ax.set_title('visualization of training set using t-SNE', size=12)
+    plt.savefig('visualization_train_tSNE.png')
+
+    if display:
+        plt.show(block=False)
+        plt.pause(2)
+    plt.close()
 
 ############################################
 # Main
@@ -196,11 +261,9 @@ def main(phase, verbose=True, show_img=True):
         plt.title('histogram on train dataset')
         plt.savefig('histogram.png')
         if show_img:
-            plt.show()
+            plt.show(block=False)
             plt.pause(2)
-            plt.close()
-        else:
-            plt.close()
+        plt.close()
 
         if verbose:
             print("============= END OF PHASE 1")
@@ -250,7 +313,7 @@ def main(phase, verbose=True, show_img=True):
                 t_samples.append(np.array(t(img)))
                 t_names.append(type(t).__name__)
 
-        show_images(images, (28, 28), titles, display=show_img)
+        show_images(images, (28, 28), t_names, display=show_img, cols=3)
         if verbose:
             print("============= END OF PHASE 2")
 
@@ -261,7 +324,11 @@ def main(phase, verbose=True, show_img=True):
         if verbose:
             print("============= PHASE 3: VISUALIZATION CLASSES")
         X_train = train_df.iloc[:, 1:].values
-        plot_PCA(X_train, display=show_img)
+        y_train = train_df.iloc[:, 0].values
+        plot_PCA(X_train, y_train, display=show_img)
+        plot_tSNE(X_train, y_train, display=show_img, pca_dim=50, shrink=True)
+        if verbose:
+            print("============= END OF PHASE 3")
 
 
 if __name__ == '__main__':
