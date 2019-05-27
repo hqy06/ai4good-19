@@ -55,17 +55,17 @@ A nice PyTorch tutorial by yunjey on GitHub: https://github.com/yunjey/pytorch-t
 
 ---
 
-[ ] make a DataLoader
+[x] ~~make a DataLoader~~ Nope, use PyTorch's built-in stuffs, be aware of function/class signatures!
 
-[ ] Load the data to the user-defined dataset class
+[x] Load the data to the user-defined dataset class
 
-[ ] Define a neural net _PyTorch class_: from scratch OR as a child class of some existed CNN.
+[x] Define a neural net _PyTorch class_: from scratch OR as a child class of some existed CNN.
 
-[ ] Add ensemble! (AdaBoost or Bagging?)
+[ ] ~~Add ensemble! (AdaBoost or Bagging?)~~
 
-[ ] Training & Testing
+[x] Training & Testing
 
-[ ]
+[x] Save the result
 
 ### Nice tricks for python
 

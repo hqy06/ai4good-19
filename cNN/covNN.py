@@ -2,42 +2,48 @@
 Exploring CovNN using PyTorch.
 Coded from scratch after reading several kaggle kernles.
 -------------------
-Tasks:
-0. import and/or load data
-1. preprocessing data
-2. visualizing dataset in 3D
-3. define a cNN and train it
-4. bring in ensembel!
-5. visualization: img through cNN layers.
-6. download the prediction file
+Future TODO:
+1. Clean up the code
+2. Bring in ensemble
+3. Try use transfer learning
 -------------------
 Dataset:
 MNIST: https://www.kaggle.com/c/digit-recognizer/data
+-------------------
 """
-
 
 ############################################
 # Imports
 ############################################
-import pandas as pd     # database
-import numpy as np      # math
-import matplotlib.pyplot as plt    # plot
-from matplotlib import colors
+import pandas as pd  # database
+import numpy as np  # math
+import matplotlib.pyplot as plt  # plot
+# from matplotlib import colors
 from datetime import datetime
 import time
 
-from sklearn.decomposition import PCA                 # PCA
+from sklearn.decomposition import PCA  # PCA
 from mpl_toolkits.mplot3d import Axes3D  # 3d plot
 from sklearn.manifold import TSNE
 
-import torch            # torch
-import torchvision      # built-in datasets
-import torch.nn as nn   # neural net
-import torch.optim as optim     # optimizer
-import torch.nn.functional as F  # functionsals
-from torch.utils.data import Dataset, DataLoader    # ud dataset
-from torch.autograd import Variable  # for backpropagation
+import torchvision  # built-in datasets
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torch.optim import lr_scheduler
+from torch.autograd import Variable
+from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
+from torchvision.utils import make_grid
+
+import math
+import random
+
+from PIL import Image, ImageOps, ImageEnhance
+import numbers
+
 
 ############################################
 # Data preprocessing
@@ -49,14 +55,14 @@ class DigitDataset(Dataset):
     REF: https://pytorch.org/tutorials/beginner/data_loading_tutorial.html
     """
 
-    def __init__(self, dataframe, type,  transform=None):
+    def __init__(self, dataframe, type, transform=None):
         """self.X are self.y are of type numpy.ndarray"""
         assert (
             type == 'train' or 'test' or 'valid'), "type must be train, valid, or test"
         self.type = type
         self.n_samples = dataframe.shape[0]
-        assert (
-            (type == 'valid' or 'test') and transform is not None), "only trainning data can be augmented!"
+        # assert (
+        #     (type == 'valid' or 'test') and transform is not None), "only trainning data can be augmented!"
         self.transform = transform
 
         self.n_features = 784  # 28*28-dim input
@@ -75,10 +81,10 @@ class DigitDataset(Dataset):
         return self.X.shape[0]
 
     def __getitem__(self, index):
-        if self.type is 'train':
+        if self.y is not None:
             return self.transform(self.X[index]), self.y[index]
         else:
-            return self.X[index], self.y[index]
+            return self.transform(self.X[index])
 
 
 def split_dataframe(dataframe=None, fraction=0.9, rand_seed=42):
@@ -104,8 +110,8 @@ def show_images(images, fig_size, labels, predictions=None, cols=None, name=None
     :param cols: specifying the number of columns, default is none for automatic arrange
     :param name: name of the saved png file, if not specified, used date time
     """
-    assert(len(images) == len(labels) and (
-        (predictions is None) or len(labels) == len(predictions)))
+    assert (len(images) == len(labels) and (
+            (predictions is None) or len(labels) == len(predictions)))
 
     n_images = len(images)
     # Set titles
@@ -229,6 +235,116 @@ def plot_tSNE(data, labels, display=True, pca_dim=None, shrink=True, verbose=Tru
         plt.pause(2)
     plt.close()
 
+
+############################################
+# The Neural Net
+############################################
+
+
+class ConvNet(nn.Module):
+    def __init__(self):
+        super(ConvNet, self).__init__()
+
+        self.conv = nn.Sequential(nn.Conv2d(1, 64, 3, padding=1),
+                                  nn.ReLU(),
+                                  nn.Conv2d(64, 64, 3, padding=1),
+                                  nn.ReLU(),
+                                  nn.MaxPool2d(2, padding=1),
+                                  nn.BatchNorm2d(64),
+                                  nn.Dropout(0.25),
+                                  nn.Conv2d(64, 32, 3, padding=1),
+                                  nn.ReLU(),
+                                  nn.Conv2d(32, 32, 3, padding=1),
+                                  nn.ReLU(),
+                                  nn.MaxPool2d(2, padding=1),
+                                  nn.Dropout(0.20)
+                                  )
+
+        self.fc = nn.Sequential(nn.Linear(32 * 8 * 8, 500),
+                                nn.ReLU(),
+                                nn.BatchNorm1d(500),
+                                nn.Dropout(p=0.5),
+                                nn.Linear(500, 100),
+                                nn.ReLU(),
+                                nn.Linear(100, 10),
+                                nn.ReLU(),
+                                nn.Softmax(dim=1)
+                                )
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = x.view(-1, x.size(1) * x.size(2) * x.size(3))
+        return self.fc(x)
+
+
+def train(epoch, model, train_loader, exp_lr_scheduler, optimizer, criterion):
+    model.train()
+    exp_lr_scheduler.step()
+
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = Variable(data), Variable(target)
+
+        if torch.cuda.is_available():
+            data = data.cuda()
+            target = target.cuda()
+
+        optimizer.zero_grad()
+        output = model(data)
+        loss = criterion(output, target)
+
+        loss.backward()
+        optimizer.step()
+
+        if (batch_idx + 1) % 100 == 0:
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, (batch_idx + 1) * len(
+                data), len(train_loader.dataset), 100. * (batch_idx + 1) / len(train_loader), loss.data.item()))
+
+
+def evaluate(data_loader, model):
+    model.eval()
+    loss = 0
+    correct = 0
+
+    for data, target in data_loader:
+        # data, target=Variable(data, volatile=True), Variable(target)
+        with torch.no_grad():
+            data, target = Variable(data), Variable(target)
+        # if torch.cuda.is_available():
+        #     data=data.cuda()
+        #     target=target.cuda()
+
+        output = model(data)
+
+        loss += F.cross_entropy(output, target, size_average=False).data.item()
+
+        pred = output.data.max(1, keepdim=True)[1]
+        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+
+    loss /= len(data_loader.dataset)
+
+    print('\nAverage loss: {:.4f}, Accuracy: {}/{}({:.3f}%)\n'.format(
+        loss, correct, len(data_loader.dataset),
+        100. * correct / len(data_loader.dataset)))
+
+
+def prediciton(data_loader, model):
+    model.eval()
+    test_pred = torch.LongTensor()
+
+    for i, data in enumerate(data_loader):
+        with torch.no_grad():
+            data = Variable(data)
+
+        # data=Variable(data, volatile=True)
+
+        output = model(data)
+
+        pred = output.cpu().data.max(1, keepdim=True)[1]
+        test_pred = torch.cat((test_pred, pred), dim=0)
+
+    return test_pred
+
+
 ############################################
 # Main
 ############################################
@@ -300,7 +416,7 @@ def main(phase, verbose=True, show_img=True):
     train_transform_f = transforms.Compose([transforms.ToPILImage(
     ), RandAffine, transforms.ToTensor(), transforms.Normalize(mean=(0.5,), std=(0.5,))])
 
-    if phase >= 2:   # show data augmentation
+    if phase >= 2:  # show data augmentation
         if verbose:
             print("============= PHASE 2: illustrate data augmentation")
 
@@ -326,7 +442,7 @@ def main(phase, verbose=True, show_img=True):
         if phase == 2:
             exit(0)
 
-    if phase >= 3:   # Visualizing classes
+    if phase >= 3:  # Visualizing classes
         if verbose:
             print("============= PHASE 3: VISUALIZATION CLASSES")
         X_train = train_df.iloc[:, 1:].values
@@ -335,6 +451,8 @@ def main(phase, verbose=True, show_img=True):
         plot_tSNE(X_train, y_train, display=show_img, pca_dim=50, shrink=True)
         if verbose:
             print("============= END OF PHASE 3")
+        if phase == 3:
+            exit(0)
 
     if phase >= 4:  # Load the data (finally......)
         if verbose:
@@ -381,10 +499,53 @@ def main(phase, verbose=True, show_img=True):
             print("Validation set: dataset created, loader created.\n")
             print("============= END OF PHASE 4")
 
+        if phase == 4:
+            exit(0)
+
     if phase >= 5:
+        if verbose:
+            print("============= PHASE 5: Init the neural network!")
+
+        model = ConvNet()
+        optimizer = optim.Adam(model.parameters(), lr=0.003)
+
+        criterion = nn.CrossEntropyLoss()
+
+        exp_lr_scheduler = lr_scheduler.StepLR(
+            optimizer, step_size=7, gamma=0.1)
+
+        if verbose:
+            print("============= END OF PHASE 5")
+
+        if phase == 5:
+            exit(0)
+
+    if phase >= 6:
+        if verbose:
+            print("============= PHASE 6: Train and Test")
+
+        n_epochs = 1
+        for epoch in range(n_epochs):
+            train(epoch, model, train_loader,
+                  exp_lr_scheduler, optimizer, criterion)
+
+            evaluate(train_loader, model)
+
+        test_pred = prediciton(test_loader, model)
+
+        out_df = pd.DataFrame(np.c_[np.arange(1, len(
+            test_dataset) + 1)[:, None], test_pred.numpy()], columns=['ImageId', 'Label'])
+
+        out_df.head()
+
+        out_df.to_csv('result.csv', index=False)
+
+        if verbose:
+            print("============= END OF PHASE 6\n============= END OF PROGRAM")
 
 
 if __name__ == '__main__':
-    print("Phases:\n\t 1. expore the dataset\n\t 2. on data augmentation")
-    phase = input("key in phase number 1, 2, or 3: ")
+    print(
+        "Phases:\n\t 1. expore the dataset\n\t 2. on data augmentation\n\t 3. visualizing datasets\n\t 4.load the data\n\t 5.Init the neural net \n\t 6. Train and Test!")
+    phase = input("key in phase number 1,2,...,6: ")
     main(int(phase))
