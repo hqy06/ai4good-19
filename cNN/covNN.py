@@ -44,7 +44,7 @@ from torchvision import transforms
 ############################################
 
 
-def DigitDataset(Dataset):
+class DigitDataset(Dataset):
     """ Dataset class for digits.
     REF: https://pytorch.org/tutorials/beginner/data_loading_tutorial.html
     """
@@ -62,9 +62,14 @@ def DigitDataset(Dataset):
         self.n_features = 784  # 28*28-dim input
         self.n_supports = 1  # 1-dim output
 
-        self.X = dataframe.iloc[:, 1:].values.reshape(
-            (-1, 28, 28)).astype(np.uint8)
-        self.y = dataframe.iloc[:, 0].values
+        if type == 'test':
+            self.X = dataframe.values.reshape(
+                (-1, 28, 28)).astype(np.uint8)[:, :, :, None]
+            self.y = None
+        else:
+            self.X = dataframe.iloc[:, 1:].values.reshape(
+                (-1, 28, 28)).astype(np.uint8)
+            self.y = dataframe.iloc[:, 0].values
 
     def __len__(self):
         return self.X.shape[0]
@@ -81,6 +86,7 @@ def split_dataframe(dataframe=None, fraction=0.9, rand_seed=42):
     df_1 = dataframe.sample(frac=fraction, random_state=rand_seed)
     df_2 = dataframe.drop(df_1.index)
     return df_1, df_2
+
 
 ############################################
 # Ploting utilites
@@ -329,6 +335,53 @@ def main(phase, verbose=True, show_img=True):
         plot_tSNE(X_train, y_train, display=show_img, pca_dim=50, shrink=True)
         if verbose:
             print("============= END OF PHASE 3")
+
+    if phase >= 4:  # Load the data (finally......)
+        if verbose:
+            print("============= PHASE 4: Load the data")
+
+        batch_size = 64
+        if verbose:
+            print("Set batch size to 64.\n")
+
+        # Train Set
+        train_transform_f = transforms.Compose(
+            [transforms.ToPILImage(), transforms.RandomRotation(degrees=20), transforms.RandomAffine(
+                degrees=45, translate=(0.1, 0.1), scale=(0.8, 1.2)),
+             transforms.ToTensor(), transforms.Normalize(mean=(0.5,), std=(0.5,))])
+
+        train_dataset = DigitDataset(train_df, 'train', train_transform_f)
+
+        train_loader = torch.utils.data.DataLoader(
+            dataset=train_dataset, batch_size=batch_size, shuffle=True)
+
+        if verbose:
+            print("Training set: dataset created, loader created.\n")
+
+        # Test Set
+        test_transform_f = transforms.Compose([transforms.ToPILImage(
+        ), transforms.ToTensor(), transforms.Normalize(mean=(0.5,), std=(0.5,))])
+
+        test_dataset = DigitDataset(test_df, 'test', test_transform_f)
+
+        test_loader = torch.utils.data.DataLoader(
+            dataset=test_dataset, batch_size=batch_size, shuffle=False)
+        if verbose:
+            print("Testing set: dataset created, loader created.\n")
+
+        # Validation Set
+        valid_transform_f = transforms.Compose([transforms.ToPILImage(
+        ), transforms.ToTensor(), transforms.Normalize(mean=(0.5,), std=(0.5,))])
+
+        valid_dataset = DigitDataset(valid_df, 'valid', test_transform_f)
+
+        valid_loader = torch.utils.data.DataLoader(
+            dataset=valid_dataset, batch_size=batch_size, shuffle=False)
+        if verbose:
+            print("Validation set: dataset created, loader created.\n")
+            print("============= END OF PHASE 4")
+
+    if phase >= 5:
 
 
 if __name__ == '__main__':

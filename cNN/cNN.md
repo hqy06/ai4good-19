@@ -47,17 +47,25 @@ A nice PyTorch tutorial by yunjey on GitHub: https://github.com/yunjey/pytorch-t
 
 [x] exploring the data: basic visualization, histogram, parameters
 
-[ ] define a CovNN
-
-[ ] Train and evaluation
-
-[ ] Prediction on test set
-
 [x] Debugging and testing like a computer scientist (not a data scientist)
 
-[ ] Visualize multi-dim data: t-SNE
+[x] Visualize multi-dim data: t-SNE
 
 [x] the `Dataset` class in PyTorch
+
+---
+
+[ ] make a DataLoader
+
+[ ] Load the data to the user-defined dataset class
+
+[ ] Define a neural net _PyTorch class_: from scratch OR as a child class of some existed CNN.
+
+[ ] Add ensemble! (AdaBoost or Bagging?)
+
+[ ] Training & Testing
+
+[ ]
 
 ### Nice tricks for python
 

@@ -5,6 +5,9 @@
 # Pycharm config folder
 .idea
 
+# Generated .png files
+*.png
+
 
 
 ##########################################
