@@ -7,13 +7,13 @@
 - [x] Debug using IRIS
 - [ ] More test (optional)
 
-## K Means
+## :heavy_check_mark: K Means
 
 - [x] Note
 - [x] Write Code
 - [x] Debug using WINE
-- [ ] Implement Soft K-Means
-- [ ] Debug using datasets
+- [ ] Implement Soft K-Means (optional)
+- [ ] Debug using datasets (later)
 
 Try use the precision matrix, i.e. $(a_{ij})$ in which each row is the result of clustering prediction and each column for the actual label.
 Also, check [MNIST 2d visualization](https://colah.github.io/posts/2014-10-Visualizing-MNIST/)
@@ -29,11 +29,11 @@ Read later: [link](https://scikit-learn.org/stable/auto_examples/cluster/plot_mi
 - [x] MLP in `sklearn`
 - [x] ~~MLP in `pytorch`~~ not necessary
 
-## CNN: convolution neural net
+## :heavy_check_mark: CNN: convolution neural net
 
 - [x] ~~Note~~ See study note in _19W_ notebook
 - [x] Simple Code
-- [ ] Tutorial by @[Puneet Grover](https://www.kaggle.com/puneetgrover)
+- [x] Tutorial by ~~@[Puneet Grover](https://www.kaggle.com/puneetgrover)~~ Write your own after reading so much stuffs!
 
 ## RNN: recurrent neural net
 
