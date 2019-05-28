@@ -1,0 +1,20 @@
+>>> from importlib import reload
+>>> import vanillaRNN
+>>> path = '..\\datasets\\names'
+>>> files = vanillaRNN.list_by_extension(path)
+>>> files
+['Arabic.txt', 'Chinese.txt', 'Czech.txt', 'Dutch.txt', 'English.txt', 'French.txt', 'German.txt', 'Greek.txt', 'Irish.txt', 'Italian.txt', 'Japanese.txt', 'Korean.txt', 'Polish.txt', 'Portuguese.txt', 'Russian.txt', 'Scottish.txt', 'Spanish.txt', 'Vietnamese.txt']
+
+
+>>> reload(vanillaRNN)
+<module 'vanillaRNN' from 'D:\\Github\\ai4good\\rNN\\vanillaRNN.py'>
+>>> print(vanillaRNN.utf8_to_ascii('Ślusàrski'))
+Slusarski
+>>> print(vanillaRNN.utf8_to_ascii('Möbius'))
+Mobius
+
+
+>>> dict = vanillaRNN.create_lang_name_dict(files, path)
+
+>>> list(dict.keys())
+['Arabic', 'Chinese', 'Czech', 'Dutch', 'English', 'French', 'German', 'Greek', 'Irish', 'Italian', 'Japanese', 'Korean', 'Polish', 'Portuguese', 'Russian', 'Scottish', 'Spanish', 'Vietnamese']
