@@ -8,6 +8,8 @@
 # Generated .png files
 *.png
 
+# Private notebook
+Note to Self.md
 
 
 ##########################################
