@@ -50,3 +50,83 @@ Stackoverflow problem answered by [@David Parks](https://stackoverflow.com/a/494
 > However, I'll point out that you're unlikely to find many examples of using an RNN to classify an image because RNNs are inferior to CNNs for most image processing tasks. The example linked to above is for educational purposes more than practical purposes.
 >
 > Now, if you are attempting to use an RNN because you have a sequence of images you wish to process, such as with a video, in this case a more natural approach would be to combine both a CNN (for the image processing part) with an RNN (for the sequence processing part). To do this you would typically pretrain the CNN on some classification task such as Imagenet, then feed the image through the CNN, then the last layer of the CNN would be the input to each timestep of an RNN. You would then let the entire network train with the loss function defined on the RNN.
+
+#### Why programmers prefer ASCII over UTF8?
+
+Stackexchange problem answered by [@Mchl](https://softwareengineering.stackexchange.com/a/97376)
+
+> 81
+>
+> In some cases it can speed up access to individual characters. Imagine string `str='ABC'` encoded in UTF8 and in ASCII (and assuming that the language/compiler/database knows about encoding)
+>
+> To access third `c` character from this string using array-access operator which is featured in many programming languages you would do something like `c = str[2]`.
+>
+> Now, if the string is ASCII encoded, all we need to do is to fetch third byte from the string.
+>
+> If, however string is UTF-8 encoded, we must first check if first character is a one or two byte char, then we need to perform same check on second character, and only then we can access the third character. The difference in performance will be the bigger, the longer the string.
+>
+> This is an issue for example in some database engines, where to find a beginning of a column placed 'after' a UTF-8 encoded VARCHAR, database does not only need to check how many characters are there in the VARCHAR field, but also how many bytes each one of them uses.
+
+### Nice Python Tricks
+
+#### Python dir listing
+
+Source: [Eliot's blog](https://www.saltycrane.com/blog/2010/04/options-listing-files-directory-python/)
+
+The general os package (love it!)
+
+```python
+import os
+dirlist = os.listdir("/usr")
+
+from pprint import pprint
+pprint(dirlist)
+```
+
+listdir + regex
+
+```python
+import os, pprint, re
+
+pat = re.compile(r".+\d.+")
+dirlist = filter(pat.match, os.listdir("/usr/local"))
+
+pprint.pprint(dirlist)
+```
+
+The python glob approach
+
+```Python
+import glob
+dirlist = glob.glob('/usr/*')
+
+from pprint import pprint
+pprint(dirlist)
+```
+
+#### Again, naming convention
+
+From [Stackoverflow](https://stackoverflow.com/a/8423697).
+`module_name, package_name, ClassName, method_name, ExceptionName, function_name, GLOBAL_CONSTANT_NAME, global_var_name, instance_var_name, function_parameter_name, local_var_name`
+
+#### See if a python module is imported
+
+```Python
+>>> import sys
+>>> 'unicodedata' in sys.modules
+False
+>>> import unicodedata
+>>> 'unicodedata' in sys.modules
+True
+```
+
+#### Pytorch: Stack vs Cat
+
+Stack along a new dimension; Cat along an existing dimension.
+
+```python
+import torch
+# if s, t of shape [3,4]
+torch.cat([s,t]).shape    # gives 6,4
+torch.stack([s,t]).shape  # gives 2,3,4
+```
