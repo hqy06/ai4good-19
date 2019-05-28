@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 Py3 console testing results for small functions
 
 
+=======
+>>>>>>> d5d88d6016ef850023d9d9cd4dcc8cd0a8350278
 >>> from importlib import reload
 >>> import vanillaRNN
 >>> path = '..\\datasets\\names'

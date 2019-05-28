@@ -108,6 +108,7 @@ pprint(dirlist)
 
 From [Stackoverflow](https://stackoverflow.com/a/8423697).
 `module_name, package_name, ClassName, method_name, ExceptionName, function_name, GLOBAL_CONSTANT_NAME, global_var_name, instance_var_name, function_parameter_name, local_var_name`
+<<<<<<< HEAD
 
 #### See if a python module is imported
 
@@ -130,3 +131,5 @@ import torch
 torch.cat([s,t]).shape    # gives 6,4
 torch.stack([s,t]).shape  # gives 2,3,4
 ```
+=======
+>>>>>>> d5d88d6016ef850023d9d9cd4dcc8cd0a8350278
