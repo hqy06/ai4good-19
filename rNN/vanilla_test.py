@@ -1,12 +1,8 @@
-<<<<<<< HEAD
 # Fragmental testing script with Atom Hydrogen package
 
 # %%
 import numpy as np
 import torch
-=======
-# %%
->>>>>>> d5d88d6016ef850023d9d9cd4dcc8cd0a8350278
 import sys
 import vanillaRNN
 from importlib import reload
@@ -17,10 +13,6 @@ import string
 ALL_LETTERS = string.ascii_letters + " .,;'"
 PATH = '..\\datasets\\names'
 
-<<<<<<< HEAD
-=======
-
->>>>>>> d5d88d6016ef850023d9d9cd4dcc8cd0a8350278
 # %%
 path = PATH
 files = vanillaRNN.list_by_extension(path)
@@ -29,10 +21,7 @@ categories = list(lang_name_dict.keys())
 n_categories = len(categories)
 n_char = len(ALL_LETTERS)
 
-<<<<<<< HEAD
 # ======================================================== Done!
-=======
->>>>>>> d5d88d6016ef850023d9d9cd4dcc8cd0a8350278
 
 # %%
 langs = categories
@@ -50,7 +39,6 @@ for lang in langs:
 reload(vanillaRNN)
 vanillaRNN.show_distribtuion_dict(
     lang_name_dict, key_name="lang", value_name='name')
-<<<<<<< HEAD
 # ======================================================== Done!
 
 # %%
@@ -95,8 +83,3 @@ tt
 
 vanillaRNN.map_output_to_category(tt, categories)
 # ======================================================== Done!
-=======
-
-
-# %%
->>>>>>> d5d88d6016ef850023d9d9cd4dcc8cd0a8350278

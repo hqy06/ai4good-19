@@ -13,23 +13,14 @@ Tasks:
 ############################################
 # Import modules
 ############################################
-<<<<<<< HEAD
 import torch                     # for tensor class
-=======
->>>>>>> d5d88d6016ef850023d9d9cd4dcc8cd0a8350278
 import os                        # for file search
 import re                        # regex
 import unicodedata               # dealing with utf8
 import string                    # working with string
 import matplotlib.pyplot as plt  # for ploting
 from datetime import datetime    # for timestamp
-<<<<<<< HEAD
-<< << << < HEAD
-== == == =
->>>>>> > d5d88d6016ef850023d9d9cd4dcc8cd0a8350278
-=======
->>>>>>> d5d88d6016ef850023d9d9cd4dcc8cd0a8350278
-
+import numpy as np               # for ndarray
 
 ############################################
 # Declare global variables: module non-public
@@ -76,7 +67,6 @@ def create_lang_name_dict(files, path):
     return name_dict
 
 ############################################
-<<<<<<< HEAD
 # Load data
 ############################################
 
@@ -119,8 +109,6 @@ def map_output_to_category(out, categories):
 
 
 ############################################
-=======
->>>>>>> d5d88d6016ef850023d9d9cd4dcc8cd0a8350278
 # Visualize data
 ############################################
 
@@ -179,23 +167,17 @@ def main(phase):
         show_distr_dict(lang_name_dict, 'lang', 'name', savefig=True)
 
     # 2. Load the data
-<<<<<<< HEAD
     # - convert dictionary entry to tensor with 1-hot encoding
     # - translating support: numercial output <-> category
 
     if phase == 2:
         name = lang_name_dict['Spanish'][0]
         print(_one_hot_word_tensor(name).shape)
-        print(_one_hot_char_tensor(name.pop()).shape)
+        print(_one_hot_char_tensor(list(name).pop()).shape)
         foo = np.array([-2.8523, -2.7800, -2.9394, -2.8962, -2.9287, -2.8165, -2.8406, -2.7723, -
                         3.0290, -2.9533, -2.8288, -2.9262, -2.9352, -2.8949, -2.8554, -2.9956, -2.9283, -2.8957])
         tt = torch.from_numpy(foo.reshape(1, 18))
         print(map_output_to_category(tt, categories))
-=======
-
-    if phase == 2:
-        pass
->>>>>>> d5d88d6016ef850023d9d9cd4dcc8cd0a8350278
 
     # 3. Creat the network
 
