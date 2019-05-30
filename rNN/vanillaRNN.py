@@ -5,9 +5,10 @@ Tasks:
 1. Prepare and explore the data
 2. Load the data
 3. Create the network
-4. Train
-5. Evaluate
-6. Predict
+4. Split the data
+5. Train
+6. Evaluate
+7. Predict
 """
 
 ############################################
@@ -22,6 +23,7 @@ import matplotlib.pyplot as plt  # for ploting
 from datetime import datetime    # for timestamp
 import numpy as np               # for ndarray
 import torch.nn as nn            # PyTorch neural net module
+import random                    # random choice of
 
 ############################################
 # Declare global variables: module non-public
@@ -143,6 +145,46 @@ def show_distr_dict(dict, key_name='key', value_name='value', savefig=False):
 
 
 ############################################
+# Data Sampling
+############################################
+
+
+def _get_entry_from_dict(index, dict):
+    keys = list(dict.keys())
+    counts = _get_value_count(dict, keys)
+
+    while index > counts[0]:
+        keys.pop(0)
+        index -= counts.pop(0)
+
+    key = keys.pop(0)
+    value = dict[key][index]
+
+    return key, value
+
+
+def random_dict_samples(n_samples, data_dict, verbose=False):
+    keys = list(data_dict.keys())
+    counts = _get_value_count(data_dict, keys)
+    count_datapoints = sum(counts)
+
+    # generate random indicis, stored in a numpy array of shape (n_samples,)
+    rand_indices = np.random.randint(0, count_datapoints, n_samples)
+
+    samples = []
+    for i in range(n_samples):
+        index = rand_indices[i]
+        lang, name = _get_entry_from_dict(index, data_dict)
+        name_tensor = _one_hot_word_tensor(name)
+        lang_tensor = torch.tensor([keys.index(lang)], dtype=torch.long)
+        samples.append((name_tensor, lang_tensor))
+        if verbose:
+            print(lang, name)
+
+    return samples
+
+
+############################################
 # Define recurrent neural net
 ############################################
 
@@ -213,14 +255,19 @@ def main(phase):
         out, next_hidden = rnn(input[0].view(1, -1), hidden)
         print(out)
 
-    # 4. Train, Evaluate, Predict
-
+    # 4. Splitting the datasets: get the training samples
     if phase == 4:
+        n_samples = 10
+        trainning_set = random_dict_samples(
+            n_samples, lang_name_dict, verbose=True)
+
+    # 5. Train, Evaluate, Predict
+    if phase == 5:
         pass
 
     return 0
 
 
 if __name__ == '__main__':
-    phase = input("Key in phase of exploration: \n\t0 for nothing, \t1 for data exploration\n\t2 for data loading, \t3 for network creating\n \t4 for train + evaluate + predict:\n\t")
+    phase = input("Key in phase of exploration: \n\t0 for nothing, \t1 for data exploration\n\t2 for data loading, \t3 for network creating\n \t4 for generate training set\t5 for train + evaluate + predict:\n\t")
     main(int(phase))

@@ -102,3 +102,20 @@ print(output)
 # ======================================================== Done!
 
 # %%
+reload(vanillaRNN)
+keys = list(lang_name_dict.keys())
+vanillaRNN._get_value_count(lang_name_dict, keys)
+
+keys
+
+vanillaRNN._get_entry_from_dict(2000, lang_name_dict)
+
+lang_name_dict['Chinese'][0]
+# ====================_get_entry_from_dict=================== Done!
+
+
+# %%
+reload(vanillaRNN)
+vanillaRNN.random_dict_samples(5, lang_name_dict)
+
+# ====================random_dict_samples=================== Done!
