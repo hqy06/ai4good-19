@@ -37,7 +37,7 @@ for lang in langs:
 
 # %%
 reload(vanillaRNN)
-vanillaRNN.show_distribtuion_dict(
+vanillaRNN.show_distr_dict(
     lang_name_dict, key_name="lang", value_name='name')
 # ======================================================== Done!
 
@@ -83,3 +83,22 @@ tt
 
 vanillaRNN.map_output_to_category(tt, categories)
 # ======================================================== Done!
+
+
+# %%
+n_hidden = 128
+print("n_char={}, n_categories={}".format(n_char, n_categories))
+
+reload(vanillaRNN)
+rnn = vanillaRNN.recNN(n_char, n_hidden, n_categories)
+
+input = vanillaRNN._one_hot_word_tensor('Albert')
+input.shape
+hidden = torch.zeros(1, n_hidden)
+hidden.shape
+
+output, next_hidden = rnn(input[0].view(1, -1), hidden)
+print(output)
+# ======================================================== Done!
+
+# %%

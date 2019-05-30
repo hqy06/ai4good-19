@@ -25,6 +25,8 @@ Steps to follow:
 
 3. Execute the programming with hyperparameters set to values provided in the tutorial.
 
+![vanillaRNN_structure](images/2019/05/vanillarnn-structure.png)
+
 ### word-level text generation
 
 ### References
@@ -130,3 +132,7 @@ import torch
 torch.cat([s,t]).shape    # gives 6,4
 torch.stack([s,t]).shape  # gives 2,3,4
 ```
+
+#### Pytorch: reshaping tensors
+
+Need to summarize this [page](https://stackoverflow.com/questions/43328632/pytorch-reshape-tensor-dimension)

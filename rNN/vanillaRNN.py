@@ -21,6 +21,7 @@ import string                    # working with string
 import matplotlib.pyplot as plt  # for ploting
 from datetime import datetime    # for timestamp
 import numpy as np               # for ndarray
+import torch.nn as nn            # PyTorch neural net module
 
 ############################################
 # Declare global variables: module non-public
@@ -142,6 +143,29 @@ def show_distr_dict(dict, key_name='key', value_name='value', savefig=False):
 
 
 ############################################
+# Define recurrent neural net
+############################################
+
+class recNN(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(recNN, self).__init__()
+        self.hidden_size = hidden_size
+        self.in_to_hid = nn.Linear(input_size + hidden_size, hidden_size)
+        self.in_to_out = nn.Linear(input_size + hidden_size, output_size)
+        self.softmax = nn.LogSoftmax(dim=1)
+
+    def forward(self, input, hidden):
+        # print(input.shape, hidden.shape)
+        combined = torch.cat((input, hidden), 1)
+        hidden = self.in_to_hid(combined)
+        output = self.in_to_out(combined)
+        output = self.softmax(output)
+        return output, hidden
+
+    def initHidden(self):
+        return torch.zeros(1, self.hidden_size)
+
+############################################
 # Main
 ############################################
 
@@ -180,9 +204,14 @@ def main(phase):
         print(map_output_to_category(tt, categories))
 
     # 3. Creat the network
+    n_hidden = 128
+    rnn = recNN(n_char, n_hidden, n_categories)
 
     if phase == 3:
-        pass
+        input = _one_hot_word_tensor('Albert')
+        hidden = torch.zeros(1, n_hidden)
+        out, next_hidden = rnn(input[0].view(1, -1), hidden)
+        print(out)
 
     # 4. Train, Evaluate, Predict
 
