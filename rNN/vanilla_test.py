@@ -108,7 +108,8 @@ vanillaRNN._get_value_count(lang_name_dict, keys)
 
 keys
 
-vanillaRNN._get_entry_from_dict(2000, lang_name_dict)
+reload(vanillaRNN)
+vanillaRNN._get_entry_from_dict(2000, lang_name_dict, verbose=True)
 
 lang_name_dict['Chinese'][0]
 # ====================_get_entry_from_dict=================== Done!
@@ -119,3 +120,16 @@ reload(vanillaRNN)
 vanillaRNN.random_dict_samples(5, lang_name_dict)
 
 # ====================random_dict_samples=================== Done!
+
+
+# %%
+counts = vanillaRNN._get_value_count(
+    lang_name_dict, list(lang_name_dict.keys()))
+total_samples = sum(counts)
+total_samples
+n_samples = 10000
+assert (n_samples < sum(vanillaRNN._get_value_count(
+    lang_name_dict, list(lang_name_dict.keys()))))
+
+
+# =======================================

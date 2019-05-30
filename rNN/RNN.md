@@ -27,6 +27,10 @@ Steps to follow:
 
 ![vanillaRNN_structure](images/2019/05/vanillarnn-structure.png)
 
+In the official tutorial of PyTorch, the `rNN.forward` method only contains on time path, i.e. a slice of sequential input is feed in the neural net.
+
+This might be a good practice since it make the "data flow" inside the neural net more clear. However, I am not sure if this is a good idea when it comes to batch training......
+
 ### word-level text generation
 
 ### References
@@ -136,3 +140,11 @@ torch.stack([s,t]).shape  # gives 2,3,4
 #### Pytorch: reshaping tensors
 
 Need to summarize this [page](https://stackoverflow.com/questions/43328632/pytorch-reshape-tensor-dimension)
+
+#### Formating print
+
+```python
+>>> num=3.65789
+>>> "The number is {:.4f}".format(num)
+'The number is 3.6579'
+```

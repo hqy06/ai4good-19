@@ -149,15 +149,17 @@ def show_distr_dict(dict, key_name='key', value_name='value', savefig=False):
 ############################################
 
 
-def _get_entry_from_dict(index, dict):
+def _get_entry_from_dict(index, dict, verbose=False):
     keys = list(dict.keys())
     counts = _get_value_count(dict, keys)
 
-    while index > counts[0]:
+    while index >= counts[0]:
         keys.pop(0)
         index -= counts.pop(0)
 
     key = keys.pop(0)
+    if verbose:
+        print("key={}, count={}, index={}".format(key, counts[0], index))
     value = dict[key][index]
 
     return key, value
@@ -177,7 +179,7 @@ def random_dict_samples(n_samples, data_dict, verbose=False):
         lang, name = _get_entry_from_dict(index, data_dict)
         name_tensor = _one_hot_word_tensor(name)
         lang_tensor = torch.tensor([keys.index(lang)], dtype=torch.long)
-        samples.append((name_tensor, lang_tensor))
+        samples.append((name_tensor, lang_tensor, name, lang))
         if verbose:
             print(lang, name)
 
@@ -206,6 +208,56 @@ class recNN(nn.Module):
 
     def initHidden(self):
         return torch.zeros(1, self.hidden_size)
+
+############################################
+# Train & Evaluate & Predict
+############################################
+
+
+def train(rnn, category_tensor, word_tensor, criterion, lr):
+    # init
+    hidden = rnn.initHidden()
+    rnn.zero_grad()
+
+    for i in range(word_tensor.size()[0]):
+        output, hidden = rnn(word_tensor[i].view(1, -1), hidden)
+
+    loss = criterion(output, category_tensor)
+    loss.backward()
+
+    for p in rnn.parameters():
+        p.data.add_(-lr, p.grad.data)
+
+    return output, loss.item()
+
+
+def evaluate():
+    pass
+
+
+def predict():
+    pass
+
+
+def fit_model(rnn, trainning_set, n_samples, support, criterion, lr, print_every, verbose=True):
+    total_loss = 0
+    iter_counter = 1
+
+    for sample in trainning_set:
+        (name_tensor, lang_tensor, name, lang) = sample
+        output, loss = train(rnn, lang_tensor, name_tensor, criterion, lr)
+        total_loss += loss
+
+        if verbose and iter_counter % print_every == 0:
+            pred_index, pred_lang = map_output_to_category(output, support)
+            correct = '√' if pred_lang == lang else '× {}'.format(lang)
+            print('{:>7} {:>3}%   {:.5f} {:>12} | {:10} {}'.format(
+                iter_counter, int(iter_counter / n_samples * 100), loss, name, pred_lang, correct))
+
+        iter_counter += 1
+
+    return total_loss
+
 
 ############################################
 # Main
@@ -261,13 +313,36 @@ def main(phase):
         trainning_set = random_dict_samples(
             n_samples, lang_name_dict, verbose=True)
 
-    # 5. Train, Evaluate, Predict
+    # 5. Train
+    criterion = nn.NLLLoss()
+    lr = 0.005
+
     if phase == 5:
+        n_samples = 10
+        assert (n_samples < sum(_get_value_count(
+            lang_name_dict, list(lang_name_dict.keys()))))
+        trainning_set = random_dict_samples(n_samples, lang_name_dict)
+
+        fit_model(rnn, trainning_set, n_samples,
+                  categories, criterion, lr,  print_every=2, verbose=True)
+
+        exit()  # end of phase 5 testing
+
+    n_train_samples = 20000
+    assert (n_train_samples < sum(_get_value_count(lang_name_dict, list(
+        lang_name_dict.keys())))), "training set should be smaller than the orignial dataset"
+    trainning_set = random_dict_samples(n_train_samples, lang_name_dict)
+
+    train_loss = fit_model(rnn, trainning_set, n_train_samples,
+                           categories, criterion, lr,  print_every=500, verbose=True)
+
+    # 6. Evaluate
+    if phase == 6:
         pass
 
     return 0
 
 
 if __name__ == '__main__':
-    phase = input("Key in phase of exploration: \n\t0 for nothing, \t1 for data exploration\n\t2 for data loading, \t3 for network creating\n \t4 for generate training set\t5 for train + evaluate + predict:\n\t")
+    phase = input("Key in phase of exploration: \n\t0 for nothing, \t1 for data exploration\n\t2 for data loading, \t3 for network creating\n \t4 for generate training set\t5 for train\n\t 6. Evaluate + predict:\n   ")
     main(int(phase))
