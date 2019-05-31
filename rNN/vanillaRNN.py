@@ -9,6 +9,9 @@ Tasks:
 5. Train
 6. Evaluate
 7. Predict
+------
+Future TODOs:
+- modify the way sampling: training set + testing set; "enlarge" a samll dataset
 """
 
 ############################################

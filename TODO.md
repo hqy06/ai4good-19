@@ -38,8 +38,8 @@ Read later: [link](https://scikit-learn.org/stable/auto_examples/cluster/plot_mi
 ## RNN: recurrent neural net
 
 - [x] Note
-- [ ] Simple Code
-- [ ] TBA
+- [x] vanilla RNN with PyTorch official tutorial
+- [ ] word-level RNN generator with LSTM cells
 
 ---
 

@@ -13,7 +13,7 @@
 
 ## Coding Practice
 
-### Character-level name classification
+### Character-level name classification :heavy_check_mark:
 
 Easy and vanilla. Aim at getting familiar with PyTorch's RNN ecology.
 
