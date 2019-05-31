@@ -334,9 +334,26 @@ def _normalize_confusion_matrix(matrix):
         matrix[i] = matrix[i] / matrix[i].sum()
 
 
-def predict():
-    pass
+def predict(name, rnn, criterion, lr, categories, n_predictions=3):
+    print('\nInput name: {}'.format(name))
+    name_tensor = _one_hot_word_tensor(name)
 
+    with torch.no_grad():
+        hidden = rnn.initHidden()
+        rnn.zero_grad()
+
+        for index in range(name_tensor.size()[0]):
+            output, hidden = rnn(name_tensor[index].view(1, -1), hidden)
+
+        # Get top N categories
+        topv, topi = output.topk(n_predictions, 1, True)
+        predictions = []
+
+        for i in range(n_predictions):
+            value = topv[0][i].item()
+            lang_index = topi[0][i].item()
+            print('(%.2f) %s' % (value, categories[lang_index]))
+            predictions.append([value, categories[lang_index]])
 
 ############################################
 # Main
@@ -419,6 +436,15 @@ def main(phase):
     if phase == 6:
         evaluate(rnn, criterion, lr, trainning_set,
                  categories, plot=True, savefig=True)
+
+    # 7. prediction
+    if phase == 7:
+        predict('Dovesky', rnn, criterion, lr, categories,  n_predictions=3)
+        predict('Hashimoto', rnn, criterion, lr, categories,  n_predictions=3)
+        predict('Jackson', rnn, criterion, lr, categories,  n_predictions=3)
+
+    name = input('\nType in a name: ')
+    predict(name, rnn, criterion, lr, categories,  n_predictions=3)
 
     return 0
 
