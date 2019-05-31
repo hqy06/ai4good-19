@@ -41,6 +41,8 @@ BTW, that tutorial is using keras but I prefer PyTorch (for now)
 
 \>\>\> Add a sketch on the network's structure!
 
+Project Gutenberg: [link](https://www.gutenberg.org/ebooks/)
+
 ### References
 
 - [Medium post](https://medium.com/coinmonks/character-to-character-rnn-with-pytorchs-lstmcell-cd923a6d0e72): Character-To-Character RNN With Pytorch’s LSTMCell by [Ulyanin](https://medium.com/@stepanulyanin)
@@ -156,3 +158,15 @@ Need to summarize this [page](https://stackoverflow.com/questions/43328632/pytor
 >>> "The number is {:.4f}".format(num)
 'The number is 3.6579'
 ```
+
+#### Matplotlib: save figure with transparent background
+
+Simply configure the `transparent` argument when saving, like this:
+
+```Python
+savefig('demo.png', transparent=True)
+```
+
+#### Python string manipulation: tokenize with white space preserved
+
+Click [me](https://stackoverflow.com/a/15579296) for the magic!

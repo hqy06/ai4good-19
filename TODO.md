@@ -68,3 +68,5 @@ Read later: [link](https://scikit-learn.org/stable/auto_examples/cluster/plot_mi
 [math in matplotlib](https://matplotlib.org/tutorials/text/mathtext.html)
 
 [Atom Hydrogen Debug](https://nteract.gitbooks.io/hydrogen/docs/Troubleshooting.html)
+
+[A Recipe for Training Neural Net](http://karpathy.github.io/2019/04/25/recipe/)
