@@ -1,0 +1,43 @@
+Essay Reading 1
+
+  ImageNet Classification with Deep Convolutional Neural Network (2012)
+
+Krizhevsky, Alex, Ilya Sutskever, and Geoffrey E. Hinton. "Imagenet classification with deep convolutional neural networks." Advances in neural information processing systems. 2012. [pdf]
+
+-------
+SONNET 18
+
+Shall I compare thee to a summer’s day?
+Thou art more lovely and more temperate.
+Rough winds do shake the darling buds of May,
+And summer’s lease hath all too short a date.
+Sometime too hot the eye of heaven shines,
+And often is his gold complexion dimmed;
+And every fair from fair sometime declines,
+By chance, or nature’s changing course, untrimmed;
+But thy eternal summer shall not fade,
+Nor lose possession of that fair thou ow’st,
+Nor shall death brag thou wand’rest in his shade,
+When in eternal lines to Time thou grow’st.
+So long as men can breathe, or eyes can see,
+So long lives this, and this gives life to thee.
+
+
+---------
+
+BOULE DE SUIF
+
+Pendant plusieurs jours de suite des lambeaux d'armée en déroute avaient
+traversé la ville. Ce n'était point de la troupe, mais des hordes
+débandées. Les hommes avaient la barbe longue et sale, des uniformes
+en guenilles, et ils avançaient d'une allure molle, sans drapeau, sans
+régiment. Tous semblaient accablés, éreintés, incapables d'une pensée ou
+d'une résolution, marchant seulement par habitude, et tombant de fatigue
+sitôt qu'ils s'arrêtaient. On voyait surtout des mobilisés, gens
+pacifiques, rentiers tranquilles, pliant sous le poids du fusil;
+des petits moblots alertes, faciles à l'épouvante et prompts à
+l'enthousiasme, prêts à l'attaque comme à la fuite; puis, au milieu
+d'eux, quelques culottes rouges, débris d'une division moulue dans une
+grande bataille; des artilleurs sombres alignés avec des fantassins
+divers; et, parfois, le casque brillant d'un dragon au pied pesant qui
+suivait avec peine la marche plus légère des lignards.
