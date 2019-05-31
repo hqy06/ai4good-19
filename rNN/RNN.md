@@ -25,13 +25,21 @@ Steps to follow:
 
 3. Execute the programming with hyperparameters set to values provided in the tutorial.
 
-![vanillaRNN_structure](images/2019/05/vanillarnn-structure.png)
+![sketch on vanillaRNN's network](images/2019/05/vanillarnn-structure.png)
 
 In the official tutorial of PyTorch, the `rNN.forward` method only contains on time path, i.e. a slice of sequential input is feed in the neural net.
 
 This might be a good practice since it make the "data flow" inside the neural net more clear. However, I am not sure if this is a good idea when it comes to batch training......
 
 ### word-level text generation
+
+We already know that we can use RNN to generate geometric book/create chatbot/do visual answering with CNN & attention mechanism. I am under the impression that most beginner level text generation project uses Shapespears' text. Though Shapespear's style of text is indeed challenge (and interesting to read too!) but we want diversity in terms of writing styles.
+
+First off, write down ideas on major components for this program, e.g. data loading, evaluation, network structure; also do some research on LSTM. Then, just like the previous coding practice, read through [this](https://machinelearningmastery.com/how-to-develop-a-word-level-neural-language-model-in-keras/) tutorial first and make some note, close it, and write your own program _without referring to documentations of python packages_.
+
+BTW, that tutorial is using keras but I prefer PyTorch (for now)
+
+\>\>\> Add a sketch on the network's structure!
 
 ### References
 
