@@ -127,9 +127,35 @@ counts = vanillaRNN._get_value_count(
     lang_name_dict, list(lang_name_dict.keys()))
 total_samples = sum(counts)
 total_samples
-n_samples = 10000
+n_samples = 500
 assert (n_samples < sum(vanillaRNN._get_value_count(
     lang_name_dict, list(lang_name_dict.keys()))))
 
+trainning_set = vanillaRNN.random_dict_samples(n_samples, lang_name_dict)
+criterion = torch.nn.NLLLoss()
+lr = 0.005
+
+train_loss = vanillaRNN.fit_model(rnn, trainning_set, n_samples,
+                                  categories, criterion, lr,  print_every=100, verbose=True)
 
 # =======================================
+# %%
+matrix = torch.from_numpy(np.arange(16).reshape(4, 4))
+
+reload(vanillaRNN)
+vanillaRNN.show_confusion_matrix(matrix, ['a', 'b', 'c', 'd'])
+
+reload(vanillaRNN)
+matrix = torch.randn(5, 5)
+
+vanillaRNN.show_confusion_matrix_2(matrix, ['aaa', 'bbb', 'ccc', 'ddd', 'eee'])
+
+# %%
+reload(vanillaRNN)
+vanillaRNN.evaluate(rnn, criterion, lr, trainning_set,
+                    categories, plot=True, savefig=False)
+
+# ========================= evluate function =============Done!
+#
+#
+#

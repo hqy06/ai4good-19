@@ -20,6 +20,7 @@ import re                        # regex
 import unicodedata               # dealing with utf8
 import string                    # working with string
 import matplotlib.pyplot as plt  # for ploting
+import matplotlib.ticker as ticker  # for force ticker display
 from datetime import datetime    # for timestamp
 import numpy as np               # for ndarray
 import torch.nn as nn            # PyTorch neural net module
@@ -144,6 +145,43 @@ def show_distr_dict(dict, key_name='key', value_name='value', savefig=False):
     plt.close()
 
 
+def show_confusion_matrix_old(confusion_matrix, classes, savefig=False):
+    fig = plt.figure()
+    ax = plt.gca()
+    cmat = ax.matshow(confusion_matrix.numpy())
+
+    fig.colorbar(cmat)      # color bar
+    ax.set_xticklabels([''] + classes, rotation=70)  # x axis
+    ax.set_yticklabels([''] + classes)   # y axis
+
+    if savefig:
+        plt.savefig(
+            '{} - confusion matrix'.format(datetime.now().strftime('%Y%m%d-%H%M')))
+    plt.show(block=False)
+    plt.pause(2)
+    plt.close()
+
+
+def show_confusion_matrix(confusion_matrix, classes, savefig=False):
+    fig = plt.figure()
+    ax = plt.gca()
+    cmat = ax.imshow(confusion_matrix.numpy(), cmap='copper')
+
+    fig.colorbar(cmat)      # color bar
+    ax.set_xticklabels([''] + classes, rotation=70)  # x axis
+    ax.set_yticklabels([''] + classes)   # y axis
+    # force show ticke labels
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+
+    if savefig:
+        plt.savefig(
+            '{} - confusion matrix'.format(datetime.now().strftime('%Y%m%d-%H%M')))
+    plt.show(block=False)
+    plt.pause(2)
+    plt.close()
+
+
 ############################################
 # Data Sampling
 ############################################
@@ -231,15 +269,7 @@ def train(rnn, category_tensor, word_tensor, criterion, lr):
     return output, loss.item()
 
 
-def evaluate():
-    pass
-
-
-def predict():
-    pass
-
-
-def fit_model(rnn, trainning_set, n_samples, support, criterion, lr, print_every, verbose=True):
+def fit_model(rnn, trainning_set, n_samples, support, criterion, lr, print_every, verbose=True, savefig=False):
     total_loss = 0
     iter_counter = 1
 
@@ -257,6 +287,45 @@ def fit_model(rnn, trainning_set, n_samples, support, criterion, lr, print_every
         iter_counter += 1
 
     return total_loss
+
+
+def evaluate(rnn, criterion, lr, dataset, categories, plot=True, savefig=False):
+    total_loss = 0
+    correct = 0
+    n_categories = len(categories)
+    confusion = torch.zeros(n_categories, n_categories)
+
+    for sample in dataset:
+        (name_tensor, lang_tensor, name, lang) = sample
+        output, loss = train(rnn, lang_tensor, name_tensor, criterion, lr)
+        pred_index, pred_lang = map_output_to_category(output, categories)
+        lang_index = categories.index(lang)
+        confusion[lang_index][pred_index] += 1
+        total_loss += loss
+        if pred_lang == lang:
+            correct += 1
+
+    _normalize_confusion_matrix(confusion)
+
+    if plot:
+        show_confusion_matrix(confusion, categories, savefig=savefig)
+
+    loss /= len(dataset)
+
+    print('\nAverage loss: {:.4f}, Accuracy: {}/{}({:.3f}%)\n'.format(
+        loss, correct, len(dataset),
+        100. * correct / len(dataset)))
+
+    return None
+
+
+def _normalize_confusion_matrix(matrix):
+    for i in range(matrix.size()[0]):
+        matrix[i] = matrix[i] / matrix[i].sum()
+
+
+def predict():
+    pass
 
 
 ############################################
@@ -336,9 +405,10 @@ def main(phase):
     train_loss = fit_model(rnn, trainning_set, n_train_samples,
                            categories, criterion, lr,  print_every=500, verbose=True)
 
-    # 6. Evaluate
+    # 6. Evaluation on training set
     if phase == 6:
-        pass
+        evaluate(rnn, criterion, lr, trainning_set,
+                 categories, plot=True, savefig=False)
 
     return 0
 
