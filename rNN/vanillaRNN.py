@@ -224,9 +224,19 @@ def random_dict_samples(n_samples, data_dict, verbose=False):
     return samples
 
 
+def train_test_split(data_dict, ratio, verbose=False):
+    n_samples = sum(_get_value_count(data_dict, list(data_dict.keys())))
+    total_samples = random_dict_samples(n_samples, data_dict, verbose=False)
+    random.shuffle(total_samples)
+    n_train = int(np.ceil(n_samples * ratio))
+    print("n_train={} of type {}".format(n_train, type(n_train)))
+    return total_samples[:n_train], total_samples[n_train:]
+
+
 ############################################
 # Define recurrent neural net
 ############################################
+
 
 class recNN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
@@ -408,7 +418,7 @@ def main(phase):
     # 6. Evaluation on training set
     if phase == 6:
         evaluate(rnn, criterion, lr, trainning_set,
-                 categories, plot=True, savefig=False)
+                 categories, plot=True, savefig=True)
 
     return 0
 
