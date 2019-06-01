@@ -401,9 +401,9 @@ def main(phase):
     rnn = recNN(n_char, n_hidden, n_categories)
 
     if phase == 3:
-        input = _one_hot_word_tensor('Albert')
+        word = _one_hot_word_tensor('Albert')
         hidden = torch.zeros(1, n_hidden)
-        out, next_hidden = rnn(input[0].view(1, -1), hidden)
+        out, next_hidden = rnn(word[0].view(1, -1), hidden)
         print(out)
 
     # 4. Splitting the datasets: get the training samples
@@ -446,12 +446,12 @@ def main(phase):
         predict('Hashimoto', rnn, criterion, lr, categories,  n_predictions=3)
         predict('Jackson', rnn, criterion, lr, categories,  n_predictions=3)
 
-    name = input('\nType in a name: ')
-    predict(name, rnn, criterion, lr, categories,  n_predictions=3)
+    a_name = input('Type in a name: ')
+    predict(a_name, rnn, criterion, lr, categories,  n_predictions=3)
 
     return 0
 
 
 if __name__ == '__main__':
-    phase = input("Key in phase of exploration: \n\t0 for nothing, \t1 for data exploration\n\t2 for data loading, \t3 for network creating\n \t4 for generate training set\t5 for train\n\t 6. Evaluate + predict:\n   ")
+    phase = input('Key in phase of exploration: \n\t0 for nothing, \t1 for data exploration\n\t2 for data loading, \t3 for network creating\n \t4 for generate training set\t5 for train\n\t 6. Evaluate + predict:\n   ')
     main(int(phase))
