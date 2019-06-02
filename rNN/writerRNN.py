@@ -26,7 +26,7 @@ import os                        # file search
 import unicodedata               # dealing with utf8
 import re                        # regex
 from collections import Counter  # building vocabulary
-
+from datetime import datetime    # for timestamp
 # ==========================================================================
 # Declare global variables
 # ==========================================================================
@@ -66,7 +66,7 @@ def list_by_extension(path, extension=r".*(\.txt)"):
 
 def read_text_from_file(filename, folder_path=PATH):
     file_path = os.path.join(folder_path, filename)
-    file = open(file_path, 'r', encoding='utf-8',)
+    file = open(file_path, 'r', encoding='utf-8')
     text = file.read()
     file.close()
     return utf8_to_ascii(text)
@@ -81,7 +81,7 @@ def clean_text(text):  # TODO: clean and the text
     # split according to white space
     tokens = re.split(r'(\s+)', text)
     # remove the empty string '' in the front
-    tokens = tokens[1:-2]
+    tokens = tokens[:-2]
     # lowercase all
     tokens = [t.casefold() for t in tokens]
     # compress multiplewhite space to one without touching delimater
@@ -94,11 +94,40 @@ def clean_text(text):  # TODO: clean and the text
 
 def fetch_data(filename, folder_path=PATH):  # TODO
     raw_text = read_text_from_file(filename, folder_path)
-    text = clean_text(text)
+    text = clean_text(raw_text)
 
-    n_word = Counter(text)
+    vocabulary = Counter(text)
 
-    pass
+    # n_word = len(vocabulary)
+    encoder_dict, decoder_dict = _generate_dictionaries(vocabulary)
+
+    return text, encoder_dict, decoder_dict
+
+
+def _generate_dictionaries(vocabulary):
+    sorted_vocab = sorted(vocabulary, key=vocabulary.get, reverse=True)
+    # use reverse=True because we want the indices of commonly used word smaller
+    word_to_int = {i: word for i, word in enumerate(sorted_vocab)}
+    int_to_word = {word: i for i, word in enumerate(sorted_vocab)}
+    return word_to_int, int_to_word
+
+
+def select_book(file_list):
+    print("Select which file to use:")
+    for i in range(len(file_list)):
+        print("\t {:>3} | {}".format(i, file_list[i]))
+    file_no = input("Text file chosed: ")
+    return file_list[int(file_no)]
+
+
+def save_to_file_ascii(some_text, name, path=None):
+    file_name = '{} - {}.txt'.format(
+        datetime.now().strftime('%Y%m%d-%H%M'), name)
+    a_file = open(file_name, 'wb')
+    ascii_text = (''.join(some_text)).encode('ascii')
+    a_file.write(ascii_text)
+    a_file.close()
+
 
 # ==========================================================================
 # Network definition
@@ -120,9 +149,28 @@ def fetch_data(filename, folder_path=PATH):  # TODO
 # ==========================================================================
 
 
-def main():
-    pass
+def main(phase=0, verbose=False):
+    path = PATH
+    char_set = ALL_CHARS
+    files = list_by_extension(path)
+
+    if phase == 1:
+        # use the small test file
+        file_name = '666-temp-by-foo.txt'
+        text, encoder, decoer = fetch_data(file_name)
+        # save the cleaned result into a text file
+        save_to_file_ascii(text, 'cleaned_text')
+        exit()
+
+    if verbose:
+        print("\n========== Preparing Data ==========")
+
+    file_name = select_book(files)
+    text, encoder, decoder = fetch_data(file_name, folder_path=path)
+
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    phase = input('key in phase number: ')
+    main(int(phase))
