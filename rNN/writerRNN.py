@@ -92,13 +92,15 @@ def clean_text(text):  # TODO: clean and the text
     return tokens
 
 
-def fetch_data(filename, folder_path=PATH):  # TODO
+def fetch_data(filename, folder_path=PATH, verbose=False):
     raw_text = read_text_from_file(filename, folder_path)
     text = clean_text(raw_text)
 
     vocabulary = Counter(text)
 
-    # n_word = len(vocabulary)
+    if verbose:
+        print('number of words: {}'.format(len(vocabulary)))
+
     encoder_dict, decoder_dict = _generate_dictionaries(vocabulary)
 
     return text, encoder_dict, decoder_dict
@@ -133,6 +135,31 @@ def save_to_file_ascii(some_text, name, path=None):
 # Network definition
 # ==========================================================================
 
+class writerRNN(nn.Module):
+    def __init__(self, n_vocab, seq_size, embedding_size, lstm_size):
+        super(writerRNN, self).__init__()
+        # size of the input sequence
+        self.seq_size = seq_size
+        # size of LSTM layer
+        self.lstm_size = lstm_size
+        # embedding layer for LSTM
+        self.embedding = nn.Embedding(n_vocab, embedding_size)
+        # long-short term memory
+        self.lstm = nn.LSTM(embedding_size,
+                            lstm_size,
+                            batch_first=True)
+        # sometimes this is called the "dense" layer
+        self.fc = nn.Linear(lstm_size, n_vocab)
+
+    def forward(self, x, prev_state):
+        embd = self.embedding(x)
+        output, state = self.lstm(embd, prev_state)
+        logits = self.fc(output)    #
+        return logits, state
+
+    def init_zeros(self, batch_size):
+        return (torch.zeros(1, batch_size, self.lstm_size),
+                torch.zeros(1, batch_size, self.lstm_size))
 
 # ==========================================================================
 # Data loading
@@ -149,7 +176,7 @@ def save_to_file_ascii(some_text, name, path=None):
 # ==========================================================================
 
 
-def main(phase=0, verbose=False):
+def main(phase, verbose=False):
     path = PATH
     char_set = ALL_CHARS
     files = list_by_extension(path)
@@ -166,11 +193,36 @@ def main(phase=0, verbose=False):
         print("\n========== Preparing Data ==========")
 
     file_name = select_book(files)
-    text, encoder, decoder = fetch_data(file_name, folder_path=path)
+    text, encoder, decoder = fetch_data(
+        file_name, folder_path=path, verbose=verbose)
+    save_to_file_ascii(text, 'cleaned_{}'.format(file_name))
+    assert (len(encoder) == len(decoder))
+    n_vocab = len(encoder)
+
+    if verbose:
+        print("\n========== Create Model ==========")
+
+    criterion = nn.CrossEntropyLoss()
+    lr = 0.001   # learning rate
+    optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+
+    seq_size = 32
+    embedding_size = 64
+    lstm_size = 64  # COMBAK:
+    rnn = writerRNN(n_vocab, seq_size, embedding_size, lstm_size)
+
+    if verbose:
+        print("\n========== Load Data ==========")
+
+    if phase == 2:  # TODO: one iteration
+        # seq = _one_hot_word_tensor('Albert')
+        # hidden = torch.zeros(1, n_hidden)
+        # out, next_hidden = rnn(word[0].view(1, -1), hidden)
+        # print(out)
 
     return 0
 
 
 if __name__ == '__main__':
     phase = input('key in phase number: ')
-    main(int(phase))
+    main(int(phase), verbose=True)
