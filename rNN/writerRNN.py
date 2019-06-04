@@ -27,6 +27,8 @@ import unicodedata               # dealing with utf8
 import re                        # regex
 from collections import Counter  # building vocabulary
 from datetime import datetime    # for timestamp
+import torch.nn as nn            # neural network
+
 # ==========================================================================
 # Declare global variables
 # ==========================================================================
@@ -72,23 +74,19 @@ def read_text_from_file(filename, folder_path=PATH):
     return utf8_to_ascii(text)
 
 
-def clean_text(text):  # TODO: clean and the text
-    # replace '--' with a white space
-    text = text.replace('--', ' ')
-    # insert whitespace between punctuations and words
-    text = text.translate(str.maketrans(
-        {key: " {0} ".format(key) for key in string.punctuation}))
-    # split according to white space
-    tokens = re.split(r'(\s+)', text)
-    # remove the empty string '' in the front
-    tokens = tokens[:-2]
-    # lowercase all
-    tokens = [t.casefold() for t in tokens]
-    # compress multiplewhite space to one without touching delimater
-    tokens = [re.sub(' +', ' ', t) for t in tokens]
-    # TODO: remove whitespace around delimater
-    tokens = [t if t == ' ' else re.sub(' ', '', t) for t in tokens]
-
+def clean_text(raw_text):
+    # replace "--" with a single space
+    text = raw_text.replace('--', ' ')
+    text = text.translate(str.maketrans({key: " {0} ".format(
+        key) for key in (string.whitespace + string.punctuation)}))
+    text = re.sub(" +", " ", text)
+    text = re.split(r'( +)', text)
+    tokens = [t.casefold() for t in text]
+    while tokens[0] == ' ' or tokens[0] == '':
+        tokens = tokens[1:]
+    while tokens[-1] == ' ' or tokens[-1] == '':
+        tokens = tokens[:-2]
+    assert (len(tokens) > 0)
     return tokens
 
 
@@ -166,6 +164,20 @@ class writerRNN(nn.Module):
 # ==========================================================================
 
 
+def load_batches(text, encoder_dict, seq_size, batch_size):
+    encoded = [encoder_dict[word] for word in text]
+    n_word = len(encoder_dict)
+    n_batch = np.floor(len(encoded) / (seq_size * batch_size))
+    encoded_in = encoded[:(n_batch * seq_size * batch_size)]
+    batch_in = np.reshape(encoded_in, (batch_size, -1))
+    encoded_out = encoded[1:] + encoded[0]
+    batch_out = np.reshape(encoded_out, (batch_size, -1))
+    xx, yy = [], []
+    for i in range(0, n_batch * seq_size, seq_size):
+        xx.append(encoded_in[:, i:i + seq_size])
+        yy.append(encoded_out[:, i:i + seq_size])
+    return xx, yy
+
 # ==========================================================================
 # Visualization
 # ==========================================================================
@@ -219,6 +231,7 @@ def main(phase, verbose=False):
         # hidden = torch.zeros(1, n_hidden)
         # out, next_hidden = rnn(word[0].view(1, -1), hidden)
         # print(out)
+        pass
 
     return 0
 
