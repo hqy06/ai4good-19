@@ -163,6 +163,7 @@ class writerRNN(nn.Module):
         return logits, state
 
     def init_zeros(self, batch_size):
+        # hidden states `hidden` and memory state `memory` for LSTM layers
         return (torch.zeros(1, batch_size, self.lstm_size),
                 torch.zeros(1, batch_size, self.lstm_size))
 
@@ -206,24 +207,74 @@ def load_batches(text, encoder_dict, seq_size, batch_size, verbose=False):
     return xx, yy
 
 # ==========================================================================
-# Visualization
+# Train, Evaluate & Predict
 # ==========================================================================
 
+
+def fit_model(writer_rnn, encoder, decoder, criterion, lr, optimizer, batch_size, in_batches, out_batches, n_epoch=3, verbose=False, save_model=False, print_every=1, save_every=2):
+    iter_counter = 0
+    for epoch in range(n_epoch):
+        epoch += 1
+        hidden, memory = writer_rnn.init_zeros(batch_size)
+        hidden = hidden.to(device)
+        memory = memory.to(device)
+        epoch_loss, iter_loss, iter_counter = train(writer_rnn, iter_counter, x, y, criterion,
+                         lr, optimizer, verbose=verbose)
+
+        if verbose and epoch % print_every == 0:
+            print('Epoch {:>3}/{} | itr={:8}\tepoch_loss={:.5f} iter_loss={:.5f}'.format(epoch, n_epoch, iter_counter, epoch_loss, iter_loss)))
+
+        if save_model and epoch % save_every == 0:
+            pass    # TODO: save the model (checkpoints!)
+
+
+def train(writer_rnn, iter_counter, batch_in, batch_out, batch_out, criterion, lr, optimizer, verbose = verbose):
+    hid_state, mem_state=writer_rnn.init_zeros(batch_size)
+    hid_state=hid_state.to(device)
+    mem_state=mem_state.to(device)
+    train_loss=0
+
+    for x, y in zip(batch_in, batch_out):
+        x=torch.tensor(x).to(device)
+        y=torch.tensor(y).to(device)
+        writer_rnn.train()  # a convention learned from PyTorch doc
+        optimizer.zero_grad()   # prepare optimizer
+
+        logits, (hid_state, mem_state)=writer_rnn(x, (hid_state, mem_state))
+
+        loss=criterion(logits.transpose(1, 2), y)
+        train_loss += loss.item()
+        loss.backward()
+
+        # NOTE: detach states - a convention, but why?
+        hid_state=hid_state.detach()
+        mem_state=mem_state.detach()
+
+        # to prevent vanishing and/or exploding gradients
+        nn.utils.clip_grad_norm_(writer_rnn.parameters(), 5)
+        # optimizer!
+        optimizer.step()
+        iter_counter += 1
+
+    return epoch_loss, loss.item(), iter_counter
+
+
+def predict()
 
 # ==========================================================================
 # Main
 # ==========================================================================
 
 
-def main(phase, verbose=False):
-    path = PATH
-    char_set = ALL_CHARS
-    files = list_by_extension(path)
+def main(phase, verbose = False):
+    path=PATH
+    char_set=ALL_CHARS
+    files=list_by_extension(path)
 
     if phase == 1:
         # use the small test file
-        file_name = '666-temp-by-foo.txt'
-        text, encoder, decoer = fetch_data(file_name)
+        file_name='666-temp-by-foo.txt'
+        text, encoder, decoer=fetch_data(file_name)
         # save the cleaned result into a text file
         save_to_file_ascii(text, 'cleaned_text')
         exit()
@@ -231,24 +282,24 @@ def main(phase, verbose=False):
     if verbose:
         print("\n========== 1. Preparing Data ==========")
 
-    file_name = select_book(files)
-    text, encoder, decoder = fetch_data(
-        file_name, folder_path=path, verbose=verbose)
+    file_name=select_book(files)
+    text, encoder, decoder=fetch_data(
+        file_name, folder_path = path, verbose = verbose)
     save_to_file_ascii(text, 'cleaned_{}'.format(file_name))
     assert (len(encoder) == len(decoder))
-    n_vocab = len(encoder)
+    n_vocab=len(encoder)
 
     if verbose:
         print("\n========== 2. Create Model ==========")
 
-    seq_size = 32
-    embedding_size = 64
-    lstm_size = 64
-    rnn = writerRNN(n_vocab, seq_size, embedding_size, lstm_size)
+    seq_size=32
+    embedding_size=64
+    lstm_size=64
+    rnn=writerRNN(n_vocab, seq_size, embedding_size, lstm_size)
 
-    criterion = nn.CrossEntropyLoss()
-    lr = 0.001   # learning rate
-    optimizer = torch.optim.Adam(rnn.parameters(), lr=lr)
+    criterion=nn.CrossEntropyLoss()
+    lr=0.001   # learning rate
+    optimizer=torch.optim.Adam(rnn.parameters(), lr = lr)
 
     if verbose:
         print("Model created\n  * {} words in sequence of {}.\n  * Embedding layer of size={}\n  * LSTM layer of size={}".format(
@@ -257,12 +308,23 @@ def main(phase, verbose=False):
 
     if verbose:
         print("\n========== 3. Load Data ==========")
-    batch_size = 16
+    batch_size=16
 
     if phase == 3:
         # list of in/out batches
-        xx, yy = load_batches(text, encoder, seq_size,
-                              batch_size, verbose=True)
+        xx, yy=load_batches(text, encoder, seq_size,
+                              batch_size, verbose = True)
+        exit()
+
+    xx, yy=load_batches(text, encoder, seq_size,
+                          batch_size, verbose=True)
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    rnn = rnn.to(device)
+
+    if verbose:
+        print("\n========== 4. Train the model ==========")
+        print("Current device: {}". format(device.type))
 
     return 0
 

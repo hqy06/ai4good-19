@@ -99,3 +99,8 @@ len(xx)
 xx[0].shape
 
 string.whitespace
+
+
+# %% Train
+device = torch.device('cuda' if torch.cuda.is_available() else'cpu')
+device.type
