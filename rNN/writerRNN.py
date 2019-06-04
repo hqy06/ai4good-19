@@ -9,7 +9,12 @@ Coding practice on text-generation using PyTorch.
 * A tutorial on word-level rnn using Keras: https://machinelearningmastery.com/how-to-develop-a-word-level-neural-language-model-in-keras/
 --------------------
 <<TO-DO>>
-* TBA
+1. prepare data
+2. define network structure
+3. load data: batch, encoding, xx + yy
+4. train
+5. evaluate
+6. predict
 --------------------
 <<Good Deeds>>
 * the magic of __main__
@@ -25,9 +30,11 @@ import string                    # string maniluplation
 import os                        # file search
 import unicodedata               # dealing with utf8
 import re                        # regex
+import torch                     # PyTorch
 from collections import Counter  # building vocabulary
 from datetime import datetime    # for timestamp
 import torch.nn as nn            # neural network
+import numpy as np               # how do you do? i do math
 
 # ==========================================================================
 # Declare global variables
@@ -107,9 +114,9 @@ def fetch_data(filename, folder_path=PATH, verbose=False):
 def _generate_dictionaries(vocabulary):
     sorted_vocab = sorted(vocabulary, key=vocabulary.get, reverse=True)
     # use reverse=True because we want the indices of commonly used word smaller
-    word_to_int = {i: word for i, word in enumerate(sorted_vocab)}
-    int_to_word = {word: i for i, word in enumerate(sorted_vocab)}
-    return word_to_int, int_to_word
+    int_word = {i: word for i, word in enumerate(sorted_vocab)}
+    word_int = {word: i for i, word in enumerate(sorted_vocab)}
+    return word_int, int_word
 
 
 def select_book(file_list):
@@ -120,7 +127,7 @@ def select_book(file_list):
     return file_list[int(file_no)]
 
 
-def save_to_file_ascii(some_text, name, path=None):
+def save_to_file_ascii(some_text, name):
     file_name = '{} - {}.txt'.format(
         datetime.now().strftime('%Y%m%d-%H%M'), name)
     a_file = open(file_name, 'wb')
@@ -164,18 +171,38 @@ class writerRNN(nn.Module):
 # ==========================================================================
 
 
-def load_batches(text, encoder_dict, seq_size, batch_size):
+def load_batches(text, encoder_dict, seq_size, batch_size, verbose=False):
     encoded = [encoder_dict[word] for word in text]
     n_word = len(encoder_dict)
-    n_batch = np.floor(len(encoded) / (seq_size * batch_size))
-    encoded_in = encoded[:(n_batch * seq_size * batch_size)]
+    n_batch = int(np.floor(len(encoded) / (seq_size * batch_size)))
+    assert (n_batch > 0), "batch_size too large!"
+    if verbose:
+        print("{} words organized in sequences of {}.\n  * Divide into {} batches, chop out last {} words.".format(
+            len(encoded), seq_size, n_batch, len(text) - int(n_batch * seq_size * batch_size)))
+
+    encoded_in = encoded[:int((n_batch * seq_size * batch_size))]
+    encoded_out = encoded_in[1:]
+    encoded_out.append(encoded_in[0])
+    if verbose:
+        print("  * encoded    :", len(encoded),
+              encoded[:5], encoded[1465:1472])
+        print("  * encoded in :", len(encoded_in),
+              encoded_in[:5], encoded_in[-5:])
+        print("  * encoded out:", len(encoded_out),
+              encoded_out[:5], encoded_out[-5:])
+
     batch_in = np.reshape(encoded_in, (batch_size, -1))
-    encoded_out = encoded[1:] + encoded[0]
     batch_out = np.reshape(encoded_out, (batch_size, -1))
+
     xx, yy = [], []
     for i in range(0, n_batch * seq_size, seq_size):
-        xx.append(encoded_in[:, i:i + seq_size])
-        yy.append(encoded_out[:, i:i + seq_size])
+        xx.append(batch_in[:, i:i + seq_size])
+        yy.append(batch_out[:, i:i + seq_size])
+
+    if verbose:
+        print(
+            "in/out batches: {} in total, each batch of shape {}".format(len(xx), xx[0].shape))
+
     return xx, yy
 
 # ==========================================================================
@@ -202,7 +229,7 @@ def main(phase, verbose=False):
         exit()
 
     if verbose:
-        print("\n========== Preparing Data ==========")
+        print("\n========== 1. Preparing Data ==========")
 
     file_name = select_book(files)
     text, encoder, decoder = fetch_data(
@@ -212,26 +239,30 @@ def main(phase, verbose=False):
     n_vocab = len(encoder)
 
     if verbose:
-        print("\n========== Create Model ==========")
-
-    criterion = nn.CrossEntropyLoss()
-    lr = 0.001   # learning rate
-    optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+        print("\n========== 2. Create Model ==========")
 
     seq_size = 32
     embedding_size = 64
-    lstm_size = 64  # COMBAK:
+    lstm_size = 64
     rnn = writerRNN(n_vocab, seq_size, embedding_size, lstm_size)
 
-    if verbose:
-        print("\n========== Load Data ==========")
+    criterion = nn.CrossEntropyLoss()
+    lr = 0.001   # learning rate
+    optimizer = torch.optim.Adam(rnn.parameters(), lr=lr)
 
-    if phase == 2:  # TODO: one iteration
-        # seq = _one_hot_word_tensor('Albert')
-        # hidden = torch.zeros(1, n_hidden)
-        # out, next_hidden = rnn(word[0].view(1, -1), hidden)
-        # print(out)
-        pass
+    if verbose:
+        print("Model created\n  * {} words in sequence of {}.\n  * Embedding layer of size={}\n  * LSTM layer of size={}".format(
+            n_vocab, seq_size, embedding_size, lstm_size))
+        print("Hyperparameters\n  * criterion=CrossEntropyLoss\n  * learning rate={}, Adam optimizer".format(lr))
+
+    if verbose:
+        print("\n========== 3. Load Data ==========")
+    batch_size = 16
+
+    if phase == 3:
+        # list of in/out batches
+        xx, yy = load_batches(text, encoder, seq_size,
+                              batch_size, verbose=True)
 
     return 0
 

@@ -1,12 +1,15 @@
 # The naïve unit test for writerRNN using Hydrogen on Atom
 
 # %% Commonly used libraries and variables
+import numpy as np
 import os
 import string
 from collections import Counter
 import re
 from importlib import reload
 import writerRNN
+import torch.nn as nn
+import torch
 path = writerRNN.PATH
 ALL_CHARS = writerRNN.ALL_CHARS
 
@@ -41,69 +44,58 @@ small_5  # split on whitespace
 small_6 = [t.casefold() for t in small_5]
 small_6  # make everything lowercase
 small_cleaned = small_6
-
-
 reload(writerRNN)
 writerRNN.clean_text(small_text)
 
 
-# %%
+# %% fetch_data testing
 raw_text = writerRNN.read_text_from_file(file, path)
-raw_text
 clean_text = writerRNN.clean_text(raw_text)
-clean_text
+vocabulary = Counter(clean_text)
+assert (len(vocabulary) <= len(clean_text))
+text, encoder, decoder = writerRNN.fetch_data(file, path, verbose=True)
+
+# =========================================================
+# End of Phase 1 data preparation
+
+# %%
+file_name = file
+text, encoder, decoder
+n_vocab = len(encoder)
+
+seq_size = 32
+embedding_size = 64
+lstm_size = 64
+rnn = writerRNN.writerRNN(n_vocab, seq_size, embedding_size, lstm_size)
+
+criterion = nn.CrossEntropyLoss()
+lr = 0.001
+optimizer = torch.optim.Adam(rnn.parameters(), lr=lr)
+
+# =========================================================
+# End of Phase 2 model declaration
 
 
-# # %% more on clean text
-# filename = files[1]
-# folder_path = path
-# raw_text = writerRNN.read_text_from_file(filename, folder_path)
-# type(raw_text)
-# tt = re.sub(' +', ' ', '\n\n  scd ')
-# tt.split()
-# text = writerRNN.clean_text(raw_text)
-# text[:500]
-# len(text)
-# # text.index('')
-# text[-3:]
-# ttt = ['char', ' ', 'is']
-# len(ttt)
-# # text[767]
-# reload(writerRNN)
-# n_word = Counter(text)
-# n_word
-# len(n_word)
-# string.whitespace[1:]
-#
-#
-# # %% word encoder and decoder
-# vocab = Counter({'deer': 1, 'ray': 2, 'me': 3,
-#                  'far': 4, 'saw': 5, 'la': 6, 'tea': 7})
-# encoder, decoder = writerRNN._generate_dictionaries(vocab)
-# encoder
-# decoder
-# len(decoder)
-#
-# # %%  select which txt file to use
-# files
-# reload(writerRNN)
-# writerRNN.select_book(files)
-#
-#
-# # %% fetch data
-# text, encoder, decoder = writerRNN.fetch_data(files[1])
-# type(text)
-# cleaned = ''.join(text)
-# type(cleaned)
-# cleaned
-# ascii_str = cleaned.encode('ascii')
-# clean_file = open((os.path.join(path, 'cleaned_text.txt')), 'wb')
-# clean_file.close()
-#
-#
-# # %%
-# text[:100]
-# small_text = text[:50]
-# small_text
-# encoder
-# text[:10]
+# %%
+len(text)
+encoder
+reload(writerRNN)
+encoded_in, encoded_out = writerRNN.load_batches(
+    text * 5, encoder, 4, 16, verbose=True)
+batch_in = np.reshape(encoded_in, (16, -1))
+batch_in.shape
+batch_out = np.reshape(encoded_out, (16, -1))
+batch_out.shape
+
+xx, yy = [], []
+for i in range(0, 23 * 4, 4):
+    xx.append(batch_in[:, i:i + 4])
+len(xx)
+
+reload(writerRNN)
+xx, yy = writerRNN.load_batches(text * 5, encoder, 4, 16, verbose=True)
+
+len(xx)
+xx[0].shape
+
+string.whitespace

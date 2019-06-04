@@ -45,6 +45,8 @@ Project Gutenberg: [link](https://www.gutenberg.org/ebooks/)
 
 Word embedding: [link](https://www.quora.com/What-is-the-embedding-layer-in-LSTM-long-short-term-memory)
 
+Why no one-hot encoding? because we use word embedding...
+
 ### References
 
 - [Medium post](https://medium.com/coinmonks/character-to-character-rnn-with-pytorchs-lstmcell-cd923a6d0e72): Character-To-Character RNN With Pytorch’s LSTMCell by [Ulyanin](https://medium.com/@stepanulyanin)
