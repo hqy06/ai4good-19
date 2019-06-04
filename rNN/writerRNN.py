@@ -211,8 +211,9 @@ def load_batches(text, encoder_dict, seq_size, batch_size, verbose=False):
 # ==========================================================================
 
 
-def fit_model(writer_rnn, encoder, decoder, criterion, lr, optimizer, batch_size, in_batches, out_batches, n_epoch=3, verbose=False, save_model=False, print_every=1, save_every=2):
+def fit_model(writer_rnn, encoder, criterion, lr, optimizer, batch_size, in_batches, out_batches, n_epoch=3, verbose=False, save_model=False, print_every=1, save_every=2):
     iter_counter = 0
+    total_loss = 0
     for epoch in range(n_epoch):
         epoch += 1
         hidden, memory = writer_rnn.init_zeros(batch_size)
@@ -225,7 +226,13 @@ def fit_model(writer_rnn, encoder, decoder, criterion, lr, optimizer, batch_size
             print('Epoch {:>3}/{} | itr={:8}\tepoch_loss={:.5f} iter_loss={:.5f}'.format(epoch, n_epoch, iter_counter, epoch_loss, iter_loss)))
 
         if save_model and epoch % save_every == 0:
-            pass    # TODO: save the model (checkpoints!)
+            # save the model (checkpoints!)
+            torch.save(writer_rnn.state_dict(), 'checkpoints/{}-writer-{}.pth'.format(
+                datetime.now().strftime('%Y%m%d-%H%M'), iter_counter))
+
+        total_loss += epoch_loss
+
+    return total_loss
 
 
 def train(writer_rnn, iter_counter, batch_in, batch_out, batch_out, criterion, lr, optimizer, verbose = verbose):
@@ -240,7 +247,8 @@ def train(writer_rnn, iter_counter, batch_in, batch_out, batch_out, criterion, l
         writer_rnn.train()  # a convention learned from PyTorch doc
         optimizer.zero_grad()   # prepare optimizer
 
-        logits, (hid_state, mem_state)=writer_rnn(x, (hid_state, mem_state))
+        logits, states=writer_rnn(x, (hid_state, mem_state))
+        (hid_state, mem_state)=states
 
         loss=criterion(logits.transpose(1, 2), y)
         train_loss += loss.item()
@@ -259,7 +267,30 @@ def train(writer_rnn, iter_counter, batch_in, batch_out, batch_out, criterion, l
     return epoch_loss, loss.item(), iter_counter
 
 
-def predict()
+def predict(writer_rnn, device, encoder, decoder, text_seed, text_len, top_k = 5):
+    writer_rnn.eval()  # convention before prediction/evaluation?
+    hid_state, mem_state=writer_rnn.init_zeros(1)
+    hid_state=hid_state.to(device)
+    mem_state=mem_state.to(device)
+    text=text_seed
+    for w in seed_text:
+        in=torch.tensor([[encoder[w]]]).to(device)
+        out, (hid_state, mem_state)=writer_rnn(in, (hid_state, mem_state))
+
+    _, top_xs=torch.topk(out[0], k = top_k)
+    choice=np.random.choice((topxs.tolist())[0])
+
+    text.append(decoder[choice])
+
+    for i in range(text_len):
+        in=torch.tensor([[choice]]).to(device)
+        out, (hid_state, mem_state)=writer_rnn(in, (hid_state, mem_state))
+        _, top_xs=torch.topk(out[0], k = top_k)
+        choice=np.random.choice((topxs.tolist())[0])
+        text.append(choice)
+
+    return text
+
 
 # ==========================================================================
 # Main
@@ -325,6 +356,14 @@ def main(phase, verbose = False):
     if verbose:
         print("\n========== 4. Train the model ==========")
         print("Current device: {}". format(device.type))
+
+    fit_model(rnn, encoder, criterion, lr, optimizer, batch_size, in_batches, out_batches, n_epoch=3, verbose=True, save_model=False, print_every=1, save_every=2)
+
+    seed = ['summer', ' ']
+    text_len = 100
+
+    result = predict(rnn, device, encoder, decoder, seed, text_len, top_k = 5)
+    print(''.join(result))
 
     return 0
 
