@@ -157,11 +157,17 @@ class writerRNN(nn.Module):
         # sometimes this is called the "dense" layer
         self.fc = nn.Linear(lstm_size, n_vocab)
 
-    def forward(self, x, prev_state):
-        embd = self.embedding(x)
-        output, state = self.lstm(embd, prev_state)
-        logits = self.fc(output)  #
-        return logits, state
+    def forward(self, x, prev_states):
+        embed_in = torch.tensor(x, dtype=torch.int64)
+        print('type of x is {}. type of embed_in is {}'.format(
+            type(x), type(embed_in)))
+        embed = self.embedding(embed_in)
+        embed = torch.tensor(embed, dtype=torch.float32)
+        print(' *** went through embedding layer')
+        output, states = self.lstm(embed, prev_states)
+        print(' *** went through lstm layer')
+        logits = self.fc(output)
+        return logits, states
 
     def init_zeros(self, batch_size):
         # hidden states `hidden` and memory state `memory` for LSTM layers
@@ -220,10 +226,7 @@ def fit_model(writer_rnn, device, encoder, criterion, lr, optimizer, batch_size,
     total_loss = 0
     for epoch in range(n_epoch):
         epoch += 1
-        hidden, memory = writer_rnn.init_zeros(batch_size)
-        hidden = hidden.to(device)
-        memory = memory.to(device)
-        epoch_loss, iter_loss, iter_counter = train(writer_rnn, iter_counter, in_batches, out_batches, criterion,
+        epoch_loss, iter_loss, iter_counter = train(writer_rnn, device, batch_size, iter_counter, in_batches, out_batches, criterion,
                                                     lr, optimizer, verbose=verbose)
 
         if verbose and epoch % print_every == 0:
@@ -243,22 +246,28 @@ def fit_model(writer_rnn, device, encoder, criterion, lr, optimizer, batch_size,
 
 
 def train(writer_rnn, device, batch_size, iter_counter, batch_in, batch_out, criterion, lr, optimizer, verbose=False):
+    # if device is 'gpu':
+    #     writer_rnn.cuda()
+
     hid_state, mem_state = writer_rnn.init_zeros(batch_size)
-    hid_state = hid_state.to(device)
-    mem_state = mem_state.to(device)
+    # hid_state = hid_state.to(device)
+    # mem_state = mem_state.to(device)
     train_loss = 0
 
     for x, y in zip(batch_in, batch_out):
-        x = torch.tensor(x).to(device)
-        y = torch.tensor(y).to(device)
         writer_rnn.train()  # a convention learned from PyTorch doc
+
         optimizer.zero_grad()  # prepare optimizer
+
+        # x = torch.tensor(x).to(device)
+        # y = torch.tensor(y).to(device)
 
         logits, states = writer_rnn(x, (hid_state, mem_state))
         (hid_state, mem_state) = states
-
-        loss = criterion(logits.transpose(1, 2), y)
-        train_loss += loss.item()
+        print(logits.shape, y.shape)
+        loss = criterion(logits, torch.from_numpy(y))
+        current_loss = loss.item()
+        train_loss += current_loss
         loss.backward()
 
         # NOTE: detach states - a convention, but why?
@@ -266,19 +275,19 @@ def train(writer_rnn, device, batch_size, iter_counter, batch_in, batch_out, cri
         mem_state = mem_state.detach()
 
         # to prevent vanishing and/or exploding gradients
-        nn.utils.clip_grad_norm_(writer_rnn.parameters(), 5)
+        _ = nn.utils.clip_grad_norm_(writer_rnn.parameters(), 5)
         # optimizer!
         optimizer.step()
         iter_counter += 1
 
-    return train_loss, loss.item(), iter_counter
+    return train_loss, current_loss, iter_counter
 
 
 def predict(writer_rnn, device, encoder, decoder, seed, text_len, top_k=5):
     writer_rnn.eval()  # convention before prediction/evaluation?
     hid_state, mem_state = writer_rnn.init_zeros(1)
-    hid_state = hid_state.to(device)
-    mem_state = mem_state.to(device)
+    # hid_state = hid_state.to(device)
+    # mem_state = mem_state.to(device)
     text = seed
     for w in seed:
         in_text = torch.tensor([[encoder[w]]]).to(device)
@@ -367,8 +376,10 @@ def main(phase, verbose=False):
         print("\n========== 4. Train the model ==========")
         print("Current device: {}".format(device.type))
 
-    fit_model(rnn, encoder, criterion, lr, optimizer, batch_size, xx, yy, n_epoch=3, verbose=True, save_model=False,
-              print_every=1, save_every=2)
+        fit_model(rnn, device, encoder, criterion, lr, optimizer, batch_size, xx,
+                  yy, n_epoch=3, verbose=True, save_model=False, print_every=1, save_every=2)
+
+        exit()
 
     seed = ['summer', ' ']
     text_len = 100

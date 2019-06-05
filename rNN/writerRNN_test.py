@@ -99,8 +99,18 @@ len(xx)
 xx[0].shape
 
 string.whitespace
+# =================== End of data loading
 
 
 # %% Train
-device = torch.device('cuda' if torch.cuda.is_available() else'cpu')
-device.type
+batch_size = 16
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+# %%
+reload(writerRNN)
+type(n_vocab)
+type(embedding_size)
+
+
+writerRNN.fit_model(rnn, device, encoder, criterion, lr, optimizer, batch_size, xx, yy,
+                    n_epoch=3, verbose=True, save_model=False, print_every=1, save_every=2)
