@@ -2,6 +2,7 @@
 Let's write like Tolstoy/Lewis Carroll!
 --------------------
 Coding practice on text-generation using PyTorch.
+Currently on-hiatus
 --------------------
 <<References>>
 * PyTorch/Numpy/Matplotlib documentations
@@ -13,7 +14,7 @@ Coding practice on text-generation using PyTorch.
 2. define network structure
 3. load data: batch, encoding, xx + yy
 4. train
-5. evaluate
+5. fixing bug......
 6. predict
 --------------------
 <<Good Deeds>>
